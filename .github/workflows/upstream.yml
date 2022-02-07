@@ -59,20 +59,21 @@ jobs:
         rm -rf $1
         }
         (
-        git_clone https://github.com/xiaorouji/openwrt-passwall
-        git_clone https://github.com/281677160/luci-app-autoupdate
-        git_clone https://github.com/NateLol/luci-app-beardropper
-        git_clone https://github.com/rufengsuixing/luci-app-onliner
-        ) &
-        (
-        git_clone https://github.com/zzsj0928/luci-app-pushbot        
         git_clone https://github.com/jerrykuku/luci-app-argon-config
         git_clone https://github.com/sirpdboy/luci-app-advanced
-        git_clone https://github.com/sirpdboy/luci-app-netdata
-        git_clone https://github.com/sirpdboy/luci-app-autotimeset
+        git_clone https://github.com/sirpdboy/luci-app-autotimeset        
+        git_clone https://github.com/281677160/luci-app-autoupdate
+        git_clone https://github.com/NateLol/luci-app-beardropper        
         ) &
         (
+        git_clone https://github.com/sirpdboy/luci-app-netdata
+        git_clone https://github.com/rufengsuixing/luci-app-onliner        
+        ) &
+        (
+        git_clone https://github.com/xiaorouji/openwrt-passwall
+        git_clone https://github.com/zzsj0928/luci-app-pushbot
         git_clone https://github.com/esirplayground/luci-app-poweroff
+        git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
         git_clone https://github.com/sundaqiang/openwrt-packages && mv -n openwrt-packages/luci-* ./; rm -rf openwrt-packages
         ) &
