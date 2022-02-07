@@ -9,9 +9,7 @@
 /luci-app-softether
 /luci-app-cifs
 /luci-app-cifsd
-/luci-app-smstool
 /luci-app-mosquitto
-/luci-app-appfilter
 /luci-app-babeld
 /luci-app-siitwizard
 /luci-app-ttyd
