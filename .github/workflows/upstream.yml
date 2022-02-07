@@ -81,7 +81,6 @@ jobs:
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
-        #svn export https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
         ) &
         (
         svn export https://github.com/doushang/luci-app-shortcutmenu/trunk/luci-app-shortcutmenu
