@@ -1,0 +1,92 @@
+--- a/luci-app-attendedsysupgrade/htdocs/luci-static/resources/view/attendedsysupgrade/overview.js
++++ b/luci-app-attendedsysupgrade/htdocs/luci-static/resources/view/attendedsysupgrade/overview.js
+@@ -269,7 +269,7 @@ function request_sysupgrade(server_url, data) {
+ 	});
+ }
+ 
+-async function check_sysupgrade(server_url, system_board, packages) {
++async function check_sysupgrade(server_url, system_board, packages, force) {
+ 	var {board_name} = system_board;
+ 	var {target, version, revision} = system_board.release;
+ 	var current_branch = get_branch(version);
+@@ -282,7 +282,6 @@ async function check_sysupgrade(server_url, system_board, packages) {
+ 		E('p', _('Searching for an available sysupgrade of %s - %s')
+ 				 .format(version, revision)));
+ 
+-	if (version.endsWith('SNAPSHOT')) {
+ 		response =
+ 	await request.get(`${server_url}/api/v1/revision/${version}/${target}`);
+ 		if (!response.ok) {
+@@ -291,43 +290,9 @@ async function check_sysupgrade(server_url, system_board, packages) {
+ 		}
+ 
+ 		const remote_revision = response.json().revision;
+-
+-		if (get_revision_count(revision) < get_revision_count(remote_revision)) {
++		if (revision < remote_revision || force) {
+ 			candidates.push(version);
+ 		}
+-	} else {
+-		response = await request.get(`${server_url}/api/overview`, {
+-			timeout: 8000,
+-		});
+-
+-		if (!response.ok) {
+-			error_api_connect(response);
+-			return;
+-		}
+-
+-		const latest = response.json().latest;
+-
+-		for (let remote_version of latest) {
+-			var remote_branch = get_branch(remote_version);
+-
+-			// already latest version installed
+-			if (version == remote_version) {
+-	break;
+-			}
+-
+-			// skip branch upgrades outside the advanced mode
+-			if (current_branch != remote_branch && advanced_mode == 0) {
+-	continue;
+-			}
+-
+-			candidates.unshift(remote_version);
+-
+-			// don't offer branches older than the current
+-			if (current_branch == remote_branch) {
+-	break;
+-			}
+-		}
+-	}
+ 
+ 	if (candidates.length) {
+ 		var m, s, o;
+@@ -394,6 +359,12 @@ async function check_sysupgrade(server_url, system_board, packages) {
+ 			click: ui.hideModal,
+ 		},
+ 			_('Close')),
++		' ',
++		E('div', {
++				class: 'btn cbi-button-action',
++				click: function() { check_sysupgrade(server_url, system_board, packages, 1); },
++			},
++				_('Force Sysupgrade')),
+ 	]),
+ 		]);
+ 	}
+
+--- a/luci-app-attendedsysupgrade/po/zh_Hans/attendedsysupgrade.po
++++ b/luci-app-attendedsysupgrade/po/zh_Hans/attendedsysupgrade.po
+@@ -26,7 +26,10 @@ msgstr "高级模式"
+ #: applications/luci-app-attendedsysupgrade/htdocs/luci-static/resources/view/attendedsysupgrade/overview.js:432
+ #: applications/luci-app-attendedsysupgrade/root/usr/share/luci/menu.d/luci-app-attendedsysupgrade.json:3
+ msgid "Attended Sysupgrade"
+-msgstr "参与式系统升级"
++msgstr "定制系统升级"
++
++msgid "Force Sysupgrade"
++msgstr "强制重刷"
+ 
+ #: applications/luci-app-attendedsysupgrade/htdocs/luci-static/resources/view/attendedsysupgrade/configuration.js:10
+ msgid "Attendedsysupgrade Configuration."
