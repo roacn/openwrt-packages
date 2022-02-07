@@ -1,17 +1,11 @@
 /create_acl_for_luci.ok
 /create_acl_for_luci.warn
 /create_acl_for_luci.err
-/luci-app-godproxy/rulesupdate.log
 /qt5
 /luci-app-samba4
 /luci-app-advancedsetting
-/luci-app-softethervpn5
-/luci-app-softether
 /luci-app-cifs
 /luci-app-cifsd
-/luci-app-mosquitto
-/luci-app-babeld
-/luci-app-siitwizard
 /luci-app-ttyd
 /ddns-scripts_aliyun
 /ddns-scripts_dnspod
@@ -29,7 +23,6 @@
 /UnblockNeteaseMusicGo
 /default-settings
 /autocore
-/*k3*
 /luci-proto-bonding
 /rclone
 /luci-lib-docker
