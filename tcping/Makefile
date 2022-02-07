@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tcping
 PKG_VERSION:=0.3
-PKG_RELEASE:=
+PKG_RELEASE:=4
 
 PKG_LICENSE:=GPL-2.0-only
 PKG_LICENSE_FILES:=license.txt
