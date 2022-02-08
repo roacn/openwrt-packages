@@ -88,7 +88,7 @@ jobs:
         svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest
         svn export https://github.com/messense/aliyundrive-webdav/trunk/openwrt aliyundrive-webdav && mvdir aliyundrive-webdav
         svn export https://github.com/messense/aliyundrive-fuse/trunk/openwrt && mvdir openwrt
-        svn export https://github.com/immortalwrt/packages/branches/openwrt-18.06/net/smartdns
+        svn export https://github.com/coolsnowwolf/packages/trunk/net/smartdns
         )
         
         #git_sparse_clone master "https://github.com/xiaoqingfengATGH/feeds-xiaoqingfeng" "xiaoqingfeng" homeredirect luci-app-homeredirect        
