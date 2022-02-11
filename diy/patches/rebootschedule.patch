@@ -11,3 +11,15 @@
  end
  
  
+--- a/luci-app-rebootschedule/root/etc/init.d/rebootschedule
++++ b/luci-app-rebootschedule/root/etc/init.d/rebootschedule
+@@ -20,7 +20,7 @@ if [ "`grep 'option enable .1.' /etc/config/rebootschedule 2>/dev/null`" ]; then
+ 			hour=`uci get rebootschedule.@crontab[$i].hour 2>/dev/null` || hour="*"; [ "$hour" = "0" ] && hour="00"
+ 			minute=`uci get rebootschedule.@crontab[$i].minute 2>/dev/null` || minute="00"; [ "$minute" = "0" ] && minute="00"
+ 			command=`uci get rebootschedule.@crontab[$i].command 2>/dev/null` || command="echo "Reboot schedule tested.""
+-			echo "$minute $hour $day $month $week $command #rebootschedule" >> /etc/crontabs/root
++			echo -e "#rebootschedule\n$minute $hour $day $month $week $command" >> /etc/crontabs/root
+ 		fi
+ 	done
+ 	[ $mcronrst ] && /etc/init.d/cron restart
+
