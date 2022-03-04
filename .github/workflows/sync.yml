@@ -74,7 +74,6 @@ jobs:
         git_clone https://github.com/esirplayground/luci-app-poweroff
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
-        git_clone https://github.com/sundaqiang/openwrt-packages && mv -n openwrt-packages/luci-* ./; rm -rf openwrt-packages
         ) &
         (
         svn export https://github.com/fw876/helloworld/trunk/luci-app-ssr-plus
