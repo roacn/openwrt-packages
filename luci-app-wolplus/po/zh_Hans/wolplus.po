@@ -14,10 +14,10 @@ msgid "name"
 msgstr "名称"
 
 msgid "macaddr"
-msgstr "客户端MAC"
+msgstr "客户端MAC地址"
 
 msgid "maceth"
-msgstr "网络接口"
+msgstr "用于唤醒的网络接口"
 
 msgid "awake"
 msgstr "唤醒"
