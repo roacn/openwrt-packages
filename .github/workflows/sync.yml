@@ -69,7 +69,6 @@ jobs:
         git_clone https://github.com/rufengsuixing/luci-app-onliner        
         ) &
         (
-        git_clone https://github.com/xiaorouji/openwrt-passwall
         git_clone https://github.com/zzsj0928/luci-app-pushbot
         git_clone https://github.com/esirplayground/luci-app-poweroff
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
@@ -87,12 +86,13 @@ jobs:
         svn export https://github.com/messense/aliyundrive-webdav/trunk/openwrt aliyundrive-webdav && mvdir aliyundrive-webdav
         svn export https://github.com/messense/aliyundrive-fuse/trunk/openwrt && mvdir openwrt
         svn export https://github.com/coolsnowwolf/packages/trunk/net/smartdns
-        )
-        
+        )         
         #git_clone https://github.com/sirpdboy/luci-app-netdata
+        #git_clone https://github.com/xiaorouji/openwrt-passwall
         #git_sparse_clone master "https://github.com/xiaoqingfengATGH/feeds-xiaoqingfeng" "xiaoqingfeng" homeredirect luci-app-homeredirect        
         git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon
         git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns
+        git clone --depth=1 -b packages https://github.com/xiaorouji/openwrt-passwall
 
         for ipk in $(ls applications); do
         	if [[ $(ls -l applications/$ipk/po | wc -l) -gt 3 ]]; then
