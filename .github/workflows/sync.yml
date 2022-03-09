@@ -36,6 +36,7 @@ jobs:
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
         sudo timedatectl set-timezone "Asia/Shanghai"
+        
     - name: Syn upstream
       run: |
         git rm -r --cache * >/dev/null 2>&1 &
@@ -76,6 +77,7 @@ jobs:
         ) &
         (
         svn export https://github.com/fw876/helloworld/trunk/luci-app-ssr-plus
+        https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
@@ -86,8 +88,7 @@ jobs:
         svn export https://github.com/messense/aliyundrive-webdav/trunk/openwrt aliyundrive-webdav && mvdir aliyundrive-webdav
         svn export https://github.com/messense/aliyundrive-fuse/trunk/openwrt && mvdir openwrt
         svn export https://github.com/coolsnowwolf/packages/trunk/net/smartdns
-        )
-        
+        )         
         #git_clone https://github.com/sirpdboy/luci-app-netdata
         #git_sparse_clone master "https://github.com/xiaoqingfengATGH/feeds-xiaoqingfeng" "xiaoqingfeng" homeredirect luci-app-homeredirect        
         git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon
@@ -97,6 +98,7 @@ jobs:
         		rm -rf applications/$ipk
         	fi
         done
+        
     - name: Delete duplicated packages
       continue-on-error: true
       run: |
@@ -104,10 +106,12 @@ jobs:
         mv -n openwrt-passwall/* ./ ; rm -Rf openwrt-passwall
         cp -rf diy/.packages/* ./ || true
         rm -Rf */.git
+        
     - name: Apply patches
       continue-on-error: true
       run: |
         find "diy/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 -E --forward --no-backup-if-mismatch"
+        
     - name: Modify
       continue-on-error: true
       run: |
@@ -125,6 +129,7 @@ jobs:
         git add .
         git commit -m "${Emoji[$[$RANDOM % ${#Emoji[@]}]]} Sync $(date +%Y-%m-%d" "%H:%M:%S)"
         git push -f
+        
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
       continue-on-error: true
