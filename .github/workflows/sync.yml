@@ -77,7 +77,7 @@ jobs:
         ) &
         (
         svn export https://github.com/fw876/helloworld/trunk/luci-app-ssr-plus
-        https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
+        svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
