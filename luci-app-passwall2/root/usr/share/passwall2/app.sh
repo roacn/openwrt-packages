@@ -249,6 +249,9 @@ ln_run() {
 	#echo "${file_func} $*" >&2
 	[ -n "${file_func}" ] || echolog "  - 找不到 ${ln_name}，无法启动..."
 	${file_func:-echolog "  - ${ln_name}"} "$@" >${output} 2>&1 &
+	process_count=$(ls $TMP_SCRIPT_FUNC_PATH | wc -l)
+	process_count=$((process_count + 1))
+	echo "${file_func:-echolog "  - ${ln_name}"} $@ >${output}" > $TMP_SCRIPT_FUNC_PATH/$process_count
 }
 
 lua_api() {
@@ -514,7 +517,6 @@ run_global() {
 	[ "$(config_t_get global close_log 1)" = "1" ] && V2RAY_LOG="/dev/null"
 	V2RAY_ARGS="${V2RAY_ARGS} log_file=${V2RAY_LOG} config_file=${V2RAY_CONFIG}"
 
-	echo "run_v2ray $V2RAY_ARGS" > $TMP_SCRIPT_FUNC_PATH/global
 	run_v2ray $V2RAY_ARGS
 }
 
@@ -534,7 +536,6 @@ start_socks() {
 				local http_port=$(config_n_get $id http_port 0)
 				local http_config_file=$TMP_PATH/HTTP2SOCKS_${id}.json
 				run_socks flag=$id node=$node bind=0.0.0.0 socks_port=$port config_file=$config_file http_port=$http_port http_config_file=$http_config_file
-				echo "run_socks flag=$id node=$node bind=0.0.0.0 socks_port=$port config_file=$config_file http_port=$http_port http_config_file=$http_config_file" > $TMP_SCRIPT_FUNC_PATH/SOCKS_${id}
 				echo $node > $TMP_ID_PATH/SOCKS_${id}
 			done
 		}
