@@ -76,6 +76,7 @@ jobs:
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
         ) &
         (
+        svn export https://github.com/xiaorouji/openwrt-passwall/branches/luci/luci-app-passwall
         svn export https://github.com/fw876/helloworld/trunk/luci-app-ssr-plus
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
