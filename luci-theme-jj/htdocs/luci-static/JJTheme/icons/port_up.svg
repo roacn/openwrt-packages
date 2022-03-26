@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1"
+	 id="svg3973" sodipodi:docname="New document 6" inkscape:version="0.48.2 r9819" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns1="http://sozi.baierouge.fr"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="31px" height="25px"
+	 viewBox="383.317 289.75 31 25" enable-background="new 383.317 289.75 31 25" xml:space="preserve">
+<sodipodi:namedview  id="base" inkscape:document-units="px" inkscape:pageopacity="0.0" inkscape:window-width="471" fit-margin-bottom="0" fit-margin-right="0" inkscape:current-layer="layer1" inkscape:window-height="453" inkscape:window-x="22" inkscape:window-y="29" inkscape:pageshadow="2" inkscape:window-maximized="0" inkscape:zoom="0.35" fit-margin-top="0" inkscape:cy="47.319462" pagecolor="#ffffff" inkscape:cx="60.93056" fit-margin-left="0" borderopacity="1.0" showgrid="false" bordercolor="#666666">
+	</sodipodi:namedview>
+<g>
+	<path id="rect3822" fill="#FFFFFF" stroke="#0A0A0A" stroke-linecap="square" d="M384.966,290.25h27.703
+		c0.634,0,1.148,0.535,1.148,1.195v21.609c0,0.66-0.515,1.195-1.148,1.195h-27.703c-0.635,0-1.149-0.535-1.149-1.195v-21.609
+		C383.817,290.785,384.332,290.25,384.966,290.25z"/>
+	<g id="g3791">
+		
+			<path id="rect3787" sodipodi:nodetypes="csccccccccccccsc" inkscape:connector-curvature="0" fill="#A9D86E" stroke="#0A0A0A" stroke-linecap="square" d="
+			M387.396,291.767h22.754c0.588,0,1.061,0.492,1.061,1.104v13.944h-5.533v2.494h-2.213v3.332h-9.383v-3.332h-2.212v-2.494h-5.533
+			v-13.944C386.336,292.26,386.809,291.767,387.396,291.767L387.396,291.767z"/>
+		<g id="g3777" transform="translate(-.36789)" visibility="hidden">
+			
+				<rect id="rect2987" x="389.349" y="291.79" fill="#FFFFFF" stroke="#191919" stroke-linecap="square" width="0.994" height="6.035"/>
+			
+				<rect id="rect3757" x="407.939" y="291.79" fill="#FFFFFF" stroke="#191919" stroke-linecap="square" width="0.994" height="6.035"/>
+			
+				<rect id="rect3765" x="402.628" y="291.79" fill="#FFFFFF" stroke="#191919" stroke-linecap="square" width="0.994" height="6.035"/>
+			
+				<rect id="rect3767" x="399.973" y="291.79" fill="#FFFFFF" stroke="#191919" stroke-linecap="square" width="0.994" height="6.035"/>
+			
+				<rect id="rect3769" x="397.316" y="291.79" fill="#FFFFFF" stroke="#191919" stroke-linecap="square" width="0.994" height="6.035"/>
+			
+				<rect id="rect3771" x="394.662" y="291.79" fill="#FFFFFF" stroke="#191919" stroke-linecap="square" width="0.994" height="6.035"/>
+			
+				<rect id="rect3773" x="392.005" y="291.79" fill="#FFFFFF" stroke="#191919" stroke-linecap="square" width="0.994" height="6.035"/>
+			
+				<rect id="rect3775" x="405.285" y="291.79" fill="#FFFFFF" stroke="#191919" stroke-linecap="square" width="0.994" height="6.035"/>
+		</g>
+	</g>
+    <g>
+		<rect x="386.273" y="308.963" fill="#1FFF42" stroke="#0A0A0A" stroke-linecap="square" width="4.352" height="3.678"/>
+			<animate id="right" attributeType="CSS" attributeName="opacity" from="1" to="0.5" dur="0.5s" repeatCount="indefinite" />
+	</g>
+	<g>
+		<rect x="406.922" y="308.963" fill="#FFC81F" stroke="#0A0A0A" stroke-linecap="square" width="4.352" height="3.678" />
+			<animate id="right" attributeType="CSS" attributeName="opacity" from="1" to="0" dur="0.2s" repeatCount="indefinite" begin="-1s"/>
+    </g>
+</g>
+</svg>
