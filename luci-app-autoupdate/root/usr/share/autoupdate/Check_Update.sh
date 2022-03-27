@@ -7,7 +7,7 @@
 [[ -f /tmp/Version_Tags ]] && rm -f /tmp/Version_Tags
 [[ -f /tmp/baidu.html ]] && rm -rf /tmp/baidu.html
 
-wget -q -p /tmp http://www.baidu.com/ -O /tmp/baidu.html
+curl -o /tmp/baidu.html -s -w %{time_namelookup}: http://www.baidu.com
 if [[ -f /tmp/baidu.html ]] && [[ `grep -c "百度一下" /tmp/baidu.html` -ge '1' ]]; then
 	rm -rf /tmp/baidu.html
 else
