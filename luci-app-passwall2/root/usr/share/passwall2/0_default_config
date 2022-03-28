@@ -67,7 +67,7 @@ config nodes 'myshunt'
 	option Proxy '_default'
 	option Netflix 'nil'
 	option domainStrategy 'IPOnDemand'
-	option domainStrategy 'hybrid'
+	option domainMatcher 'hybrid'
 
 config shunt_rules 'LAN'
 	option remarks 'LAN'
