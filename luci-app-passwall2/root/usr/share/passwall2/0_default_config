@@ -55,7 +55,7 @@ config auto_switch
 
 config nodes 'myshunt'
 	option remarks '分流总节点'
-	option type 'V2ray'
+	option type 'Xray'
 	option protocol '_shunt'
 	option AD 'nil'
 	option BT '_direct'

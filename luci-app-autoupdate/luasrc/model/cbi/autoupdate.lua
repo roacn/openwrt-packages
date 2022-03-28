@@ -36,7 +36,7 @@ o.default=github_url
 luci.sys.call ( "/usr/share/autoupdate/Check_Update.sh > /dev/null")
 local cloud_version = luci.sys.exec("cat /tmp/cloud_version")
 local current_version = luci.sys.exec("grep LOCAL_Firmware= /etc/openwrt_upgrade | cut -c16-100")
-local current_model = luci.sys.exec("jsonfilter -e '@.model.id' < /etc/board.json | tr ',' '_'")
+local current_model = luci.sys.exec("grep CURRENT_Device= /etc/openwrt_upgrade | cut -c16-100")
 local MODEL_type = luci.sys.exec("grep MODEL_type= /etc/openwrt_upgrade | cut -c12-100")
 local KERNEL_type = luci.sys.exec("grep KERNEL_type= /etc/openwrt_upgrade | cut -c13-100")
 
