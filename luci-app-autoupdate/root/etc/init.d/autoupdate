@@ -62,4 +62,5 @@ Other()
 {
 	uci set autoupdate.@login[0].github=${Input_Other}
  	uci commit autoupdate
+	/etc/init.d/autoupdate restart
 }
