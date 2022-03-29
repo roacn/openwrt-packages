@@ -7,11 +7,11 @@
 [[ -f /tmp/Version_Tags ]] && rm -f /tmp/Version_Tags
 [[ -f /tmp/baidu.html ]] && rm -rf /tmp/baidu.html
 
-curl -o /tmp/baidu.html -s -w %{time_namelookup}: http://www.baidu.com
+curl -o /tmp/baidu.html -s -w %{time_namelookup}: http://www.baidu.com > /dev/null 2>&1
 if [[ -f /tmp/baidu.html ]] && [[ `grep -c "百度一下" /tmp/baidu.html` -ge '1' ]]; then
 	rm -rf /tmp/baidu.html
 else
-	echo "您可能没进行联网,请检查网络!" > /tmp/cloud_version
+	echo "您可能没进行联网,请检查网络,或您的网络不能连接百度?" > /tmp/cloud_version
 	exit 1
 fi
 
@@ -22,14 +22,20 @@ if [[ -f /bin/openwrt_info ]]; then
 		echo "openwrt_info数据有误运行失败,请检查openwrt_info文件!" > /tmp/cloud_version
 		exit 1
         fi
+else
+	echo "固件不存在openwrt_info执行文件!" > /tmp/cloud_version
+	exit 1
+fi
+
+if [[ -f /bin/AutoUpdate.sh ]]; then
 	chmod +x /bin/AutoUpdate.sh
 	bash /bin/AutoUpdate.sh	-w
-        if [[ $? -ne 0 ]];then
-		echo "AutoUpdate.sh数据有误运行失败,请检查AutoUpdate.sh文件!" > /tmp/cloud_version
+	if [[ $? -ne 0 ]];then
+		echo "您现在所用的Github地址上没检测到云端存在,或您的仓库为私库!" > /tmp/cloud_version
 		exit 1
         fi
 else
-	echo "未检测到openwrt_info文件,无法运行更新程序!" > /tmp/cloud_version
+	echo "固件不存在AutoUpdate.sh执行文件!" > /tmp/cloud_version
 	exit 1
 fi
 
