@@ -14,17 +14,25 @@ run_autoupdate()
 		[ "$week" == 7 ] && week="*"
 		sed -i '/AutoUpdate/d' /etc/crontabs/root >/dev/null 2>&1
 		echo "$minute $hour * * $week bash /bin/AutoUpdate.sh -u" >> /etc/crontabs/root
+		/etc/init.d/cron restart
 	else
-		sed -i '/AutoUpdate/d' /etc/crontabs/root >/dev/null 2>&1	
+		stop	
 	fi
 	if [ -f /bin/AutoUpdate.sh ] && [ -f /bin/openwrt_info ];then
 		cus_url="$(uci get autoupdate.@login[0].github)"
-                ApAuthor="${cus_url%.git}"
-                custom_github_url="${ApAuthor##*com/}"
-		current_github_url="$(grep Warehouse= /bin/openwrt_info | cut -d "=" -f2)"
+		if [[ "$(echo ${cus_url} |grep -c 'https://github.com/.*/.*')" == '0' ]]; then
+        		Input_Other="$(grep Github= /bin/openwrt_info | cut -d "=" -f2)"
+			Other
+      		else
+                	ApAuthor="${cus_url%.git*}"
+                	custom_github_url="${ApAuthor##*com/}"
+			current_github_url="$(grep Warehouse= /bin/openwrt_info | cut -d "=" -f2)"
+		fi
 		[[ -n "${custom_github_url}" ]] && {
 			[[ "${custom_github_url}" != "${current_github_url}" ]] && {
 				sed -i "s?${current_github_url}?${custom_github_url}?g" /bin/openwrt_info
+        			Input_Other="$(grep Github= /bin/openwrt_info | cut -d "=" -f2)"
+				Other
 			}
 		}
 	fi
@@ -41,10 +49,17 @@ start()
 stop()
 {
 	sed -i '/AutoUpdate/d' /etc/crontabs/root >/dev/null 2>&1
+	/etc/init.d/cron restart
 }
 
 restart()
 {
 	stop
 	start
+}
+
+Other()
+{
+	uci set autoupdate.@login[0].github=${Input_Other}
+ 	uci commit autoupdate
 }
