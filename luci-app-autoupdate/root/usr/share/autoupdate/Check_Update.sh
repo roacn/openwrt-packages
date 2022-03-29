@@ -56,7 +56,7 @@ if [[ -n "${CLOUD_Firmware}" ]]; then
 		Checked_Type="发现更高版本固件可更新"
 		echo "${CLOUD_Firmware} [${Checked_Type}]" > /tmp/cloud_version
 	elif [[ "${LOCAL_Firmware}" -lt "${CLOUD_Firmware}" ]]; then
-		Checked_Type="云端最高版本固件,低于您现在所安装的版本"
+		Checked_Type="云端最高版本固件,低于您现在所安装的版本,请到云端查看原因"
 		echo "${CLOUD_Firmware} [${Checked_Type}]" > /tmp/cloud_version	
 	fi
 fi
