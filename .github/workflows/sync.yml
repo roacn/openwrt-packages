@@ -62,7 +62,6 @@ jobs:
         git_clone https://github.com/jerrykuku/luci-app-argon-config
         git_clone https://github.com/sirpdboy/luci-app-advanced
         git_clone https://github.com/sirpdboy/luci-app-autotimeset
-        git_clone https://github.com/281677160/luci-app-autoupdate
         git_clone https://github.com/NateLol/luci-app-beardropper
         ) &
         (
@@ -107,6 +106,7 @@ jobs:
         )     
         git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon
         git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns
+        #git_clone https://github.com/281677160/luci-app-autoupdate
         for ipk in $(ls applications); do
         	if [[ $(ls -l applications/$ipk/po | wc -l) -gt 3 ]]; then
         		rm -rf applications/$ipk
