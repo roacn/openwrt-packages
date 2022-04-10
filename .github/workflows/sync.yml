@@ -78,6 +78,7 @@ jobs:
         (
         git_clone https://github.com/openwrt-develop/luci-theme-atmaterial
         git_clone https://github.com/sirpdboy/luci-theme-btmod
+        git_clone https://github.com/netitgo/luci-theme-jj
         git_clone https://github.com/thinktip/luci-theme-neobird
         git_clone https://github.com/sirpdboy/luci-theme-opentopd
         ) &
@@ -96,9 +97,6 @@ jobs:
         svn export https://github.com/messense/aliyundrive-fuse/trunk/openwrt && mvdir openwrt
         svn export https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest/trunk/applications/luci-app-cloudflarespeedtest
         svn export https://github.com/coolsnowwolf/packages/trunk/net/smartdns
-        ) &
-        (
-        svn export https://github.com/rosywrt/luci-theme-rosy/branches/openwrt-18.06/luci-theme-rosy
         ) &
         (
         git_sparse_clone master "https://github.com/coolsnowwolf/packages" "ledepackages" \
