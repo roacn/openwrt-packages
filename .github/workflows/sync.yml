@@ -81,6 +81,7 @@ jobs:
         git_clone https://github.com/netitgo/luci-theme-jj
         git_clone https://github.com/thinktip/luci-theme-neobird
         git_clone https://github.com/sirpdboy/luci-theme-opentopd
+        git_clone https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         ) &
         (
         svn export https://github.com/xiaorouji/openwrt-passwall/branches/luci/luci-app-passwall
