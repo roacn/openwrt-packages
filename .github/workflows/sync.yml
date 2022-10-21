@@ -6,8 +6,9 @@ name: Merge-Upstream
 on:
   push:
     paths:
+      - '.github/workflows/sync.yml'
       - '.gitignore'
-      - 'diy/**'
+      - '.diy/**'
   schedule:
     - cron: 5 */12 * * *
   workflow_dispatch:
@@ -15,14 +16,14 @@ on:
       ssh:
         description: 'ssh'
         required: false
-        default: 'false'
+        default: 'true'
   watch:
     types: started
   repository_dispatch:
 
 jobs:
   merge:
-    if: github.event.repository.owner.id == github.event.sender.id
+    if: github.event.repository.owner.id == github.event.sender.id || ! github.event.sender.id
     runs-on: Ubuntu-20.04
 
     steps:
@@ -39,8 +40,9 @@ jobs:
         
     - name: Syn upstream
       run: |
+        shopt -s extglob
         git rm -r --cache * >/dev/null 2>&1 &
-        rm -rf `find ./* -maxdepth 0 -type d ! -name "diy"` >/dev/null 2>&1
+        rm -rf `find ./* -maxdepth 0 -type d ! -name ".diy"` >/dev/null 2>&1
         function git_clone() (
           git clone --depth 1 $1 $2 || true
         )
@@ -120,19 +122,19 @@ jobs:
       run: |
         shopt -s extglob
         mv -n openwrt-passwall/* ./ ; rm -Rf openwrt-passwall
-        cp -rf diy/.packages/* ./ || true
+        cp -rf .diy/packages/* ./ || true
         rm -Rf */.git
         
     - name: Apply patches
       continue-on-error: true
       run: |
-        find "diy/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 -E --forward --no-backup-if-mismatch"
+        find ".diy/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 -E --forward --no-backup-if-mismatch"
         
     - name: Modify
       continue-on-error: true
       run: |
-        bash diy/create_acl_for_luci.sh -a >/dev/null 2>&1 || true
-        bash diy/convert_translation.sh -a >/dev/null 2>&1 || true
+        bash .diy/create_acl_for_luci.sh -a >/dev/null 2>&1 || true
+        bash .diy/convert_translation.sh -a >/dev/null 2>&1 || true
       
     - name: SSH connection to Actions
       uses: kiddin9/debugger-action@master
