@@ -56,7 +56,7 @@ endef
 
 TARGET_CFLAGS += -D_GNU_SOURCE
 
-ifeq ($(BUILD_VARIANT), ssl)
+ifeq ($(BUILD_VARIANT),ssl)
 	CONFIGURE_ARGS += --with-openssl="$(STAGING_DIR)/usr" --disable-shared
 else
 	CONFIGURE_ARGS += --without-openssl
@@ -98,12 +98,8 @@ define Package/iperf3-ssl/install
 endef
 
 define Package/libiperf3/install
-	ifeq ($(BUILD_VARIANT),ssl)
-		
-	else
-		$(INSTALL_DIR) $(1)/usr/lib
-		$(CP) $(PKG_INSTALL_DIR)/usr/lib/libiperf.so.* $(1)/usr/lib
-	endif
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libiperf.so.* $(1)/usr/lib
 endef
 
 $(eval $(call BuildPackage,iperf3))
