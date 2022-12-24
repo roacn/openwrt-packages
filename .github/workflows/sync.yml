@@ -71,7 +71,7 @@ jobs:
         git_clone https://github.com/rufengsuixing/luci-app-onliner
         ) &
         (
-        git_clone https://github.com/xiaorouji/openwrt-passwall
+        
         git_clone https://github.com/zzsj0928/luci-app-pushbot
         git_clone https://github.com/esirplayground/luci-app-poweroff
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
@@ -86,8 +86,9 @@ jobs:
         git_clone https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         ) &
         (
-        svn export https://github.com/xiaorouji/openwrt-passwall/branches/luci/luci-app-passwall
-        svn export https://github.com/fw876/helloworld/trunk/luci-app-ssr-plus
+        git_clone https://github.com/fw876/helloworld
+        git_clone https://github.com/xiaorouji/openwrt-passwall
+        svn export https://github.com/xiaorouji/openwrt-passwall/branches/luci/luci-app-passwall        
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
@@ -122,6 +123,7 @@ jobs:
       run: |
         shopt -s extglob
         mv -n openwrt-passwall/* ./ ; rm -Rf openwrt-passwall
+        mv -n helloworld/* ./ ; rm -Rf helloworld
         cp -rf .diy/packages/* ./ || true
         rm -Rf */.git
         
