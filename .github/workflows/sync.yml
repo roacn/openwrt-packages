@@ -75,6 +75,7 @@ jobs:
         git_clone https://github.com/zzsj0928/luci-app-pushbot
         git_clone https://github.com/esirplayground/luci-app-poweroff
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
+        git_clone https://github.com/pymumu/openwrt-smartdns
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
         ) &
         (
@@ -99,8 +100,7 @@ jobs:
         svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest
         svn export https://github.com/messense/aliyundrive-webdav/trunk/openwrt aliyundrive-webdav && mvdir aliyundrive-webdav
         svn export https://github.com/messense/aliyundrive-fuse/trunk/openwrt && mvdir openwrt
-        svn export https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest/trunk/applications/luci-app-cloudflarespeedtest
-        svn export https://github.com/coolsnowwolf/packages/trunk/net/smartdns
+        svn export https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest/trunk/applications/luci-app-cloudflarespeedtest        
         svn export https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-unblockmusic
         svn export https://github.com/coolsnowwolf/packages/trunk/multimedia/UnblockNeteaseMusic-Go
         svn export https://github.com/coolsnowwolf/packages/trunk/multimedia/UnblockNeteaseMusic
@@ -111,6 +111,7 @@ jobs:
         )     
         git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon
         git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns
+        #svn export https://github.com/coolsnowwolf/packages/trunk/net/smartdns
         #git_clone https://github.com/281677160/luci-app-autoupdate
         for ipk in $(ls applications); do
         	if [[ $(ls -l applications/$ipk/po | wc -l) -gt 3 ]]; then
@@ -124,6 +125,7 @@ jobs:
         shopt -s extglob
         mv -n openwrt-passwall/* ./ ; rm -Rf openwrt-passwall
         mv -n helloworld/* ./ ; rm -Rf helloworld
+        mv -n openwrt-smartdns smartdns
         cp -rf .diy/packages/* ./ || true
         rm -Rf */.git
         
