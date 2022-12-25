@@ -29,7 +29,7 @@
 | luci-app-passwall            | passwall                                                     |
 | luci-app-passwall2           | passwall                                                     |
 | luci-app-poweroff            | 关机                                                         |
-| luci-app-pushbot             | Server酱 微信/Telegram 推送的插件；<br />支持：钉钉推送,企业微信推送,PushPlus推送,微信推送,企业微信应用推送,飞书推送,钉钉机器人推送,企业微信机器人推送,飞书机器人 |
+| luci-app-pushbot             | 全能推送<br />支持：钉钉推送,企业微信推送,PushPlus推送,微信推送,企业微信应用推送,飞书推送,钉钉机器人推送,企业微信机器人推送,飞书机器人 |
 | luci-app-rebootschedule      | 定时任务                                                     |
 | luci-app-shortcutmenu        | 快捷菜单                                                     |
 | luci-app-smartdns            | SmartDNS，DNS解析                                            |
