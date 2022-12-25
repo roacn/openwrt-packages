@@ -35,7 +35,7 @@
 | luci-app-smartdns            | SmartDNS，DNS解析                                            |
 | luci-app-ssr-plus            | SSR Plus                                                     |
 | luci-app-tencentcloud-cos    | 腾讯云                                                       |
-| luci-app-tencentddns         | 腾讯DNS                                                      |
+| luci-app-tencentddns         | 腾讯DDNS                                                      |
 | luci-app-unblockmusic        | 解除网易云音乐播放限制                                       |
 | luci-app-unblockneteasemusic | 解除网易云音乐播放限制                                       |
 | luci-app-wifidog             | wifidog的luci管理界面                                        |
