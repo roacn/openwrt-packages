@@ -1,0 +1,10 @@
+--- luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic
++++ luci-app-unblockneteasemusic/root/etc/init.d/unblockneteasemusic
+@@ -56,7 +56,6 @@ start_service()
+ 	config_get update_time "config" "update_time" "3"
+ 	sed -i "/$NAME/d" /etc/crontabs/root
+ 	is_enabled "config" "auto_update" && echo "0 ${update_time} * * * /usr/share/$NAME/update.sh update_core" >> "/etc/crontabs/root"
+-	echo "*/5 * * * * /usr/share/$NAME/log_check.sh" >> "/etc/crontabs/root"
+ 	/etc/init.d/cron restart
+ 
+ 	[ ! -s "/usr/share/$NAME/core/app.js" ] && { rm -f "/usr/share/$NAME/local_ver"; sh "/usr/share/$NAME/update.sh" "update_core_non_restart"; }
