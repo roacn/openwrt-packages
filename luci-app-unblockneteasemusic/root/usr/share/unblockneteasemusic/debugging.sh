@@ -78,7 +78,13 @@ echo -e "\n"
 		echo -e ""
 		nft list set inet fw4 "acl_neteasemusic_https" 2>&1
 		echo -e ""
+		nft list set inet fw4 "local_addr" 2>&1
+		echo -e ""
 		nft list set inet fw4 "neteasemusic" 2>&1
+		echo -e ""
+		nft list chain inet fw4 "input_wan" | grep "unblockneteasemusic-http-" 2>"/dev/null" || echo -e 'Http Port pub access rule not found.'
+		echo -e ""
+		nft list chain inet fw4 "input_wan" | grep "unblockneteasemusic-https-" 2>"/dev/null" || echo -e 'Https Port pub access rule not found.'
 		echo -e ""
 		nft list chain inet fw4 "netease_cloud_music" 2>&1
 		echo -e ""
@@ -105,4 +111,4 @@ echo -e "\n"
 	echo -e ""
 }
 
-cat "/var/run/$NAME/run.log" 2>"/dev/null" || echo -e "Log is not avaiable."
+cat "/tmp/$NAME.log" 2>"/dev/null" || echo -e "Log is not avaiable."
