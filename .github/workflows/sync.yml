@@ -104,8 +104,8 @@ jobs:
         svn export https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-unblockmusic
         svn export https://github.com/coolsnowwolf/packages/trunk/multimedia/UnblockNeteaseMusic-Go
         svn export https://github.com/coolsnowwolf/packages/trunk/multimedia/UnblockNeteaseMusic
-        svn export https://github.com/sbwml/luci-app-mosdns/trunk/luci-app-mosdns
-        svn export https://github.com/sbwml/luci-app-mosdns/trunk/mosdns
+        svn export https://github.com/QiuSimons/openwrt-mos/trunk/luci-app-mosdns
+        svn export https://github.com/QiuSimons/openwrt-mos/trunk/mosdns
         ) &
         (
         git_sparse_clone master "https://github.com/coolsnowwolf/packages" "ledepackages" \
@@ -114,6 +114,8 @@ jobs:
         git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon
         git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns
         #git_clone https://github.com/281677160/luci-app-autoupdate
+        #svn export https://github.com/sbwml/luci-app-mosdns/trunk/luci-app-mosdns
+        #svn export https://github.com/sbwml/luci-app-mosdns/trunk/mosdns
         for ipk in $(ls applications); do
         	if [[ $(ls -l applications/$ipk/po | wc -l) -gt 3 ]]; then
         		rm -rf applications/$ipk
