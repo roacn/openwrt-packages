@@ -1,7 +1,5 @@
-diff --git a/rebootschedule.lua b/rebootschedule1.lua
-index 27e6072..7f76d74 100644
---- a/rebootschedule.lua
-+++ b/rebootschedule1.lua
+--- a/luci-app-rebootschedule/luasrc/controller/rebootschedule.lua
++++ b/luci-app-rebootschedule/luasrc/controller/rebootschedule.lua
 @@ -4,8 +4,8 @@ function index()
  		return
  	end
