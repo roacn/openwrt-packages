@@ -114,8 +114,6 @@ jobs:
         git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon
         git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns
         #git_clone https://github.com/281677160/luci-app-autoupdate
-        #svn export https://github.com/sbwml/luci-app-mosdns/trunk/luci-app-mosdns
-        #svn export https://github.com/sbwml/luci-app-mosdns/trunk/mosdns
         for ipk in $(ls applications); do
         	if [[ $(ls -l applications/$ipk/po | wc -l) -gt 3 ]]; then
         		rm -rf applications/$ipk
