@@ -90,8 +90,6 @@ jobs:
         git_clone https://github.com/xiaorouji/openwrt-passwall
         svn export https://github.com/xiaorouji/openwrt-passwall/branches/luci/luci-app-passwall        
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
-        svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
-        svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
         svn export https://github.com/QiuSimons/openwrt-mos/trunk/luci-app-mosdns
         svn export https://github.com/QiuSimons/openwrt-mos/trunk/mosdns
@@ -104,6 +102,10 @@ jobs:
         svn export https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest/trunk/applications/luci-app-cloudflarespeedtest
         ) &
         (
+        svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
+        svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
+         ) &
+        (       
         git_clone https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         svn export https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-unblockmusic
         svn export https://github.com/coolsnowwolf/packages/trunk/multimedia/UnblockNeteaseMusic-Go
