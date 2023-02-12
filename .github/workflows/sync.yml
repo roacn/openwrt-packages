@@ -94,8 +94,8 @@ jobs:
         svn export https://github.com/xiaorouji/openwrt-passwall/branches/luci/luci-app-passwall        
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
-        svn export https://github.com/QiuSimons/openwrt-mos/trunk/luci-app-mosdns
-        svn export https://github.com/QiuSimons/openwrt-mos/trunk/mosdns
+        svn export https://github.com/sbwml/luci-app-mosdns/trunk/luci-app-mosdns
+        svn export https://github.com/sbwml/luci-app-mosdns/trunk/mosdns
         ) &
         (
         svn export https://github.com/doushang/luci-app-shortcutmenu/trunk/luci-app-shortcutmenu
