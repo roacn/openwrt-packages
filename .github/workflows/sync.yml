@@ -93,8 +93,6 @@ jobs:
         svn export https://github.com/xiaorouji/openwrt-passwall/branches/luci/luci-app-passwall        
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
-        svn export https://github.com/sbwml/luci-app-mosdns/trunk/luci-app-mosdns
-        svn export https://github.com/sbwml/luci-app-mosdns/trunk/mosdns
         ) &
         (
         svn export https://github.com/doushang/luci-app-shortcutmenu/trunk/luci-app-shortcutmenu
@@ -108,6 +106,7 @@ jobs:
         ) &
         (
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
+        git_clone https://github.com/sbwml/luci-app-mosdns.git mos
         ) &
         (
         git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
@@ -135,6 +134,7 @@ jobs:
         mv -n helloworld/* ./ ; rm -Rf helloworld
         mv -n openwrt-smartdns smartdns
         mv -n cloudflarespeedtest/applications/luci-app-cloudflarespeedtest luci-app-cloudflarespeedtest ; rm -Rf cloudflarespeedtest
+        mv -n mos/luci-app-mosdns luci-app-mosdns && mv -n mos/mosdns mos && mv -n mos/v2dat v2dat ; rm -Rf mos
         cp -rf .diy/packages/* ./ || true
         rm -Rf */.git
         
