@@ -134,7 +134,7 @@ jobs:
         mv -n helloworld/* ./ ; rm -Rf helloworld
         mv -n openwrt-smartdns smartdns
         mv -n cloudflarespeedtest/applications/luci-app-cloudflarespeedtest luci-app-cloudflarespeedtest ; rm -Rf cloudflarespeedtest
-        mv -n mos/luci-app-mosdns luci-app-mosdns && mv -n mos/mosdns mos && mv -n mos/v2dat v2dat ; rm -Rf mos
+        mv -n mos/luci-app-mosdns luci-app-mosdns && mv -n mos/mosdns mosdns && mv -n mos/v2dat v2dat ; rm -Rf mos
         cp -rf .diy/packages/* ./ || true
         rm -Rf */.git
         
