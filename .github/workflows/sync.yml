@@ -89,7 +89,7 @@ jobs:
         ) &
         (
         git_clone https://github.com/fw876/helloworld
-        git_clone https://github.com/xiaorouji/openwrt-passwall
+        git_clone https://github.com/xiaorouji/openwrt-passwall-packages
         svn export https://github.com/xiaorouji/openwrt-passwall/branches/luci/luci-app-passwall        
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
@@ -130,7 +130,7 @@ jobs:
       continue-on-error: true
       run: |
         shopt -s extglob
-        mv -n openwrt-passwall/* ./ ; rm -Rf openwrt-passwall
+        mv -n openwrt-passwall-packages/* ./ ; rm -Rf openwrt-passwall-packages
         mv -n helloworld/* ./ ; rm -Rf helloworld
         mv -n openwrt-smartdns smartdns
         mv -n cloudflarespeedtest/applications/luci-app-cloudflarespeedtest luci-app-cloudflarespeedtest ; rm -Rf cloudflarespeedtest
