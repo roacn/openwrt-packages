@@ -66,7 +66,6 @@ jobs:
         (
         git_clone https://github.com/jerrykuku/luci-app-argon-config
         git_clone https://github.com/sirpdboy/luci-app-advanced
-        git_clone https://github.com/sirpdboy/luci-app-autotimeset
         git_clone https://github.com/NateLol/luci-app-beardropper
         ) &
         (
@@ -74,10 +73,10 @@ jobs:
         git_clone https://github.com/rufengsuixing/luci-app-onliner
         ) &
         (
+        git_clone https://github.com/sirpdboy/luci-app-autotimeset
         git_clone https://github.com/zzsj0928/luci-app-pushbot
         git_clone https://github.com/esirplayground/luci-app-poweroff
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
-        git_clone https://github.com/pymumu/openwrt-smartdns
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
         ) &
         (
@@ -92,6 +91,8 @@ jobs:
         git_clone https://github.com/xiaorouji/openwrt-passwall-packages
         svn export https://github.com/xiaorouji/openwrt-passwall/trunk/luci-app-passwall        
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
+        ) &
+        (
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
         ) &
         (
@@ -112,13 +113,10 @@ jobs:
         ) &
         (
         git_sparse_clone master "https://github.com/coolsnowwolf/packages" "ledepackages" net/iperf3 admin/netdata
-        )     
+        ) 
+        git_clone https://github.com/pymumu/openwrt-smartdns
         git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon
         git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns
-        #git_clone https://github.com/281677160/luci-app-autoupdate
-        #svn export https://github.com/coolsnowwolf/luci/trunk/applications/luci-app-unblockmusic
-        #svn export https://github.com/coolsnowwolf/packages/trunk/multimedia/UnblockNeteaseMusic-Go
-        #svn export https://github.com/coolsnowwolf/packages/trunk/multimedia/UnblockNeteaseMusic
         for ipk in $(ls applications); do
         	if [[ $(ls -l applications/$ipk/po | wc -l) -gt 3 ]]; then
         		rm -rf applications/$ipk
