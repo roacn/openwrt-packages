@@ -98,7 +98,7 @@ jobs:
         (
         svn export https://github.com/doushang/luci-app-shortcutmenu/trunk/luci-app-shortcutmenu
         svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest
-        svn export https://github.com/messense/aliyundrive-fuse/trunk/openwrt && mvdir openwrt
+        svn export https://github.com/messense/aliyundrive-webdav/trunk/openwrt && mvdir openwrt
         ) &
         (
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
@@ -106,7 +106,6 @@ jobs:
         ) &
         (
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
-        git_clone https://github.com/sbwml/luci-app-mosdns.git mos
         ) &
         (
         git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
@@ -114,7 +113,8 @@ jobs:
         (
         git_sparse_clone master "https://github.com/coolsnowwolf/packages" "ledepackages" net/iperf3 admin/netdata
         ) 
-        git_clone https://github.com/pymumu/openwrt-smartdns
+        git_clone https://github.com/sbwml/luci-app-mosdns.git mos && mvdir mos
+        git_clone https://github.com/pymumu/openwrt-smartdns smartdns
         git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon
         git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns
         for ipk in $(ls applications); do
@@ -129,9 +129,8 @@ jobs:
         shopt -s extglob
         mv -n openwrt-passwall-packages/* ./ ; rm -Rf openwrt-passwall-packages
         mv -n helloworld/* ./ ; rm -Rf helloworld
-        mv -n openwrt-smartdns smartdns
         mv -n cloudflarespeedtest/applications/luci-app-cloudflarespeedtest luci-app-cloudflarespeedtest ; rm -Rf cloudflarespeedtest
-        mv -n mos/luci-app-mosdns luci-app-mosdns && mv -n mos/mosdns mosdns && mv -n mos/v2dat v2dat ; rm -Rf mos
+        #mv -n mos/luci-app-mosdns luci-app-mosdns && mv -n mos/mosdns mosdns && mv -n mos/v2dat v2dat ; rm -Rf mos
         cp -rf .diy/packages/* ./ || true
         rm -Rf */.git
         
