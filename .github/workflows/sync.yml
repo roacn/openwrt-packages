@@ -113,7 +113,7 @@ jobs:
         (
         git_sparse_clone master "https://github.com/coolsnowwolf/packages" "ledepackages" net/iperf3 admin/netdata
         ) 
-        git_clone https://github.com/sbwml/luci-app-mosdns.git mos && mvdir mos
+        git_clone https://github.com/sbwml/luci-app-mosdns.git mos
         git_clone https://github.com/pymumu/openwrt-smartdns smartdns
         git clone --depth=1 -b 18.06 https://github.com/jerrykuku/luci-theme-argon
         git clone --depth=1 -b lede https://github.com/pymumu/luci-app-smartdns
@@ -130,7 +130,7 @@ jobs:
         mv -n openwrt-passwall-packages/* ./ ; rm -Rf openwrt-passwall-packages
         mv -n helloworld/* ./ ; rm -Rf helloworld
         mv -n cloudflarespeedtest/applications/luci-app-cloudflarespeedtest luci-app-cloudflarespeedtest ; rm -Rf cloudflarespeedtest
-        #mv -n mos/luci-app-mosdns luci-app-mosdns && mv -n mos/mosdns mosdns && mv -n mos/v2dat v2dat ; rm -Rf mos
+        mv -n mos/luci-app-mosdns luci-app-mosdns && mv -n mos/mosdns mosdns && mv -n mos/v2dat v2dat ; rm -Rf mos
         cp -rf .diy/packages/* ./ || true
         rm -Rf */.git
         
