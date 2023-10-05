@@ -45,4 +45,3 @@
 | [luci-app-wechatpush](https://github.com/tty228/luci-app-wechatpush.git) | 微信/Telegram 推送                                           |
 | luci-app-wifidog                                             | wifidog的luci管理界面                                        |
 | luci-app-wolplus                                             | 网络唤醒                                                     |
-| iperf3                                                       | 网络吞吐测试                                                 |
