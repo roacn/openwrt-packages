@@ -5,6 +5,8 @@
 name: Merge-Upstream-Lede
 on:
   push:
+    branches:
+      - Lede
     paths:
       - '.github/workflows/sync.yml'
       - '.gitignore'
