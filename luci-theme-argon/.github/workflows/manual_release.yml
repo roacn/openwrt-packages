@@ -22,11 +22,12 @@ on:
         default: 'false'
   push:
     branches:
-      - '18.06'
+      - 'master'
     paths:
       - 'luci-theme-argon/Makefile'
 env:
   TZ: Asia/Shanghai
+
 
 jobs:
   job_check:
@@ -41,7 +42,7 @@ jobs:
         uses: actions/checkout@main
         with:
           fetch-depth: 0
-          ref: '18.06'
+          ref: 'master'
 
       - name: Check version
         id: check_version
@@ -63,11 +64,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: For Lean's LEDE 18.06 LuCI
+          name: For openwrt official Snapshots LuCI master
           tag_name: ${{steps.check_version.outputs.latest_version}}
 
+
   job_build_argon:
-    name: Build Argon (18.06)
+    name: Build Argon (master)
     needs: job_check
     if: needs.job_check.outputs.has_update == 'true'
     runs-on: ubuntu-latest
@@ -98,15 +100,15 @@ jobs:
           cd sdk  
           echo "src-git base https://github.com/openwrt/openwrt.git;openwrt-21.02" > feeds.conf
           echo "src-git-full packages https://github.com/openwrt/packages.git;openwrt-21.02" >> feeds.conf
-          echo "src-git-full luci https://git.openwrt.org/project/luci.git;openwrt-18.06" >> feeds.conf
+          echo "src-git-full luci https://git.openwrt.org/project/luci.git;openwrt-21.02" >> feeds.conf
           echo "src-git-full routing https://git.openwrt.org/feed/routing.git;openwrt-21.02"  >> feeds.conf
-          git clone -b 18.06 https://github.com/${{ github.repository }}.git package/downloads/luci-theme-argon
+          git clone -b master https://github.com/${{ github.repository }}.git package/downloads/luci-theme-argon
           ./scripts/feeds update -a
           echo "CONFIG_PACKAGE_luci-theme-argon=m" > .config
           ./scripts/feeds install -d n luci-theme-argon
           make download -j8
 
-      - name: Configure Argon (18.06)
+      - name: Configure Argon (master)
         run: |
           cd sdk
           ./scripts/feeds install luci-theme-argon
@@ -118,7 +120,7 @@ jobs:
           echo "CONFIG_PACKAGE_luci-theme-argon=m" >> .config
           make defconfig
 
-      - name: Compile Argon (18.06)
+      - name: Compile Argon (master)
         id: compile
         run: |
           cd sdk
@@ -130,7 +132,7 @@ jobs:
           echo "status=success" >> $GITHUB_OUTPUT
           echo "FIRMWARE=$PWD" >> $GITHUB_ENV
 
-      - name: Upload Argon (18.06) ipks to release
+      - name: Upload Argon (master) ipks to release
         uses: softprops/action-gh-release@v1
         if: steps.compile.outputs.status == 'success'
         env:
