@@ -5,6 +5,8 @@
 name: Merge-Upstream-Official
 on:
   push:
+    branches:
+      - Official
     paths:
       - '.github/workflows/sync.yml'
       - '.gitignore'
