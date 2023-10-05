@@ -10,7 +10,7 @@ on:
       - '.gitignore'
       - '.diy/**'
   schedule:
-    - cron: 5 */12 * * *
+    - cron: 5 */8 * * *
   workflow_dispatch:
     inputs:
       ssh:
