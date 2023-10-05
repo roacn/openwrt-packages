@@ -10,7 +10,7 @@ on:
     paths:
       - '.github/workflows/sync.yml'
       - '.gitignore'
-      - '.diy/**'
+      - '.github/diy/**'
   schedule:
     - cron: 25 */12 * * *
   workflow_dispatch:
@@ -29,6 +29,11 @@ jobs:
     runs-on: Ubuntu-20.04
 
     steps:
+    - name: Check inputs
+      run: |
+        echo github.ref is: ${{ github.ref }}
+        echo github.event_name is: ${{ github.event_name }}
+        
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -44,23 +49,44 @@ jobs:
       run: |
         shopt -s extglob
         git rm -r --cache * >/dev/null 2>&1 &
-        rm -rf `find ./* -maxdepth 0 -type d ! -name ".diy"` >/dev/null 2>&1
-        function git_clone() (
-          git clone --depth 1 $1 $2 || true
-        )
-        function git_branch_clone() (
+        rm -rf `find ./* -maxdepth 0 -type d ! -name ".github/diy"` >/dev/null 2>&1
+        function git_clone() {
+          git clone --depth 1 $1 $2
+          if [ "$?" != 0 ]; then
+            echo "error on $1"
+            pid="$( ps -q $$ )"
+            kill $pid
+          fi
+        }
+        function git_branch_clone() {
           git clone --depth=1 -b $1 $2 || true
-        )
-        function git_sparse_clone() (
+        }
+        function git_sparse_clone() {
           branch="$1" rurl="$2" localdir="$3" && shift 3
           git clone -b $branch --depth 1 --filter=blob:none --sparse $rurl $localdir
+          if [ "$?" != 0 ]; then
+            echo "error on $rurl"
+            pid="$( ps -q $$ )"
+            kill $pid
+          fi
           cd $localdir
           git sparse-checkout init --cone
           git sparse-checkout set $@
-          mv -n $@ ../
+          mv -n $@ ../ || true
           cd ..
           rm -rf $localdir
-          )
+          }
+        function git_sparse_clone2() {
+          commitid="$1" rurl="$2" localdir="$3" && shift 3
+          git clone --filter=blob:none --sparse $rurl $localdir
+          cd $localdir
+          git checkout $commitid
+          git sparse-checkout init --cone
+          git sparse-checkout set $@
+          mv -n $@ ../ || true
+          cd ..
+          rm -rf $localdir
+        }
         function mvdir() {
         mv -n `find $1/* -maxdepth 0 -type d` ./
         rm -rf $1
@@ -125,19 +151,19 @@ jobs:
         mv -n helloworld/* ./ ; rm -rf helloworld
         mv -n cloudflarespeedtest/applications/luci-app-cloudflarespeedtest luci-app-cloudflarespeedtest ; rm -rf cloudflarespeedtest
         mv -n mos/luci-app-mosdns luci-app-mosdns && mv -n mos/mosdns mosdns && mv -n mos/v2dat v2dat ; rm -rf mos
-        cp -rf .diy/packages/* ./ || true
+        cp -rf .github/diy/packages/* ./ || true
         rm -rf */.git
         
     - name: Apply patches
       continue-on-error: true
       run: |
-        find ".diy/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 -E --forward --no-backup-if-mismatch"
+        find ".github/diy/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 -E --forward --no-backup-if-mismatch"
         
     - name: Modify
       continue-on-error: true
       run: |
-        bash .diy/create_acl_for_luci.sh -a >/dev/null 2>&1 || true
-        bash .diy/convert_translation.sh -a >/dev/null 2>&1 || true
+        bash .github/diy/create_acl_for_luci.sh -a >/dev/null 2>&1 || true
+        bash .github/diy/convert_translation.sh -a >/dev/null 2>&1 || true
       
     - name: SSH connection to Actions
       uses: kiddin9/debugger-action@master
