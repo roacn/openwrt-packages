@@ -103,8 +103,6 @@ jobs:
         ) & (
         git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         ) & (
-        git_sparse_clone master "https://github.com/coolsnowwolf/packages" "ledepackages" net/iperf3 admin/netdata
-        ) & (
         git_clone https://github.com/sbwml/luci-app-mosdns.git mos
         git_clone https://github.com/pymumu/openwrt-smartdns smartdns
         git_branch_clone lede https://github.com/pymumu/luci-app-smartdns
@@ -154,7 +152,7 @@ jobs:
         Emoji=("🎉" "🤞" "✨" "🎁" "🎈" "🎄" "🎨" "💋" "🍓" "🍕" "🍉" "💐" "🌴" "🚀" "🛸" "🗽" "⛅" "🌈" "🔥" "⛄" "🐶" "🏅" "🦄" "🐤")
         git add .
         git commit -m "${Emoji[$[$RANDOM % ${#Emoji[@]}]]} Sync $(date +%Y-%m-%d" "%H:%M)"
-        git push -f
+        git push -f origin master
         
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
