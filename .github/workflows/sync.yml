@@ -2,7 +2,7 @@
 # This is free software, lisence use MIT.
 # 
 
-name: Merge-Upstream
+name: Merge-Upstream-Lede
 on:
   push:
     paths:
