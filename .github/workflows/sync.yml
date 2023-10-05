@@ -10,7 +10,7 @@ on:
       - '.gitignore'
       - '.diy/**'
   schedule:
-    - cron: 5 */12 * * *
+    - cron: 25 */12 * * *
   workflow_dispatch:
     inputs:
       ssh:
@@ -63,8 +63,7 @@ jobs:
         mv -n `find $1/* -maxdepth 0 -type d` ./
         rm -rf $1
         }
-        (
-        git_clone https://github.com/jerrykuku/luci-app-argon-config
+        (        
         git_clone https://github.com/sirpdboy/luci-app-advanced
         git_clone https://github.com/NateLol/luci-app-beardropper
         ) & (
@@ -107,12 +106,8 @@ jobs:
         git_clone https://github.com/pymumu/openwrt-smartdns smartdns
         git_branch_clone lede https://github.com/pymumu/luci-app-smartdns
         ) & (
-        git_clone https://github.com/openwrt-develop/luci-theme-atmaterial
-        git_clone https://github.com/sirpdboy/luci-theme-btmod
-        git_clone https://github.com/netitgo/luci-theme-jj
-        git_clone https://github.com/thinktip/luci-theme-neobird
-        git_clone https://github.com/sirpdboy/luci-theme-opentopd
-        git_branch_clone 18.06 https://github.com/jerrykuku/luci-theme-argon
+        git_branch_clone master https://github.com/jerrykuku/luci-theme-argon
+        git_branch_clone master https://github.com/jerrykuku/luci-app-argon-config
         )
         for ipk in $(ls applications); do
         	if [[ $(ls -l applications/$ipk/po | wc -l) -gt 3 ]]; then
@@ -152,7 +147,7 @@ jobs:
         Emoji=("🎉" "🤞" "✨" "🎁" "🎈" "🎄" "🎨" "💋" "🍓" "🍕" "🍉" "💐" "🌴" "🚀" "🛸" "🗽" "⛅" "🌈" "🔥" "⛄" "🐶" "🏅" "🦄" "🐤")
         git add .
         git commit -m "${Emoji[$[$RANDOM % ${#Emoji[@]}]]} Sync $(date +%Y-%m-%d" "%H:%M)"
-        git push -f origin master
+        git push -f origin Official
         
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
