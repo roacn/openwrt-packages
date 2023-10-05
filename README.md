@@ -1,6 +1,6 @@
 ### OpenWrt — 常用插件
 
-#### luci 18.06 19.07 通用
+#### 官方OpenWrt 
 
 [![openwrt](https://img.shields.io/badge/source-openwrt-magenta.svg?style=flat&logo=appveyor)](https://github.com/openwrt/openwrt) 
 [![Lean](https://img.shields.io/badge/source-Lean-red.svg?style=flat&logo=appveyor)](https://github.com/coolsnowwolf/lede) 
