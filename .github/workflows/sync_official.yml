@@ -116,6 +116,7 @@ jobs:
         svn export https://github.com/messense/aliyundrive-webdav/trunk/openwrt && mvdir openwrt
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
+        svn export https://github.com/coolsnowwolf/gargoyle/trunk/package/addon/lean/vsftpd-alt
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
         svn export https://github.com/immortalwrt-collections/openwrt-cdnspeedtest/trunk/cdnspeedtest
         git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
