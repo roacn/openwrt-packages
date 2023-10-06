@@ -8,7 +8,7 @@ on:
     branches:
       - Lede
     paths:
-      - '.github/workflows/sync.yml'
+      - '.github/workflows/sync_lede.yml'
       - '.gitignore'
       - '.github/diy/**'
   schedule:
