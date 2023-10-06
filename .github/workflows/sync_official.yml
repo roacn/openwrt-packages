@@ -48,10 +48,11 @@ jobs:
     - name: Syn upstream
       run: |
         shopt -s extglob
+        set +e
         git rm -r --cache * >/dev/null 2>&1 &
         rm -rf `find ./* -maxdepth 0 -type d ! -name ".github/diy"` >/dev/null 2>&1
         function git_clone() {
-          git clone --depth 1 $1 $2
+          git clone --depth 1 $1 $2 || true
           if [ "$?" != 0 ]; then
             echo "error on $1"
             pid="$( ps -q $$ )"
@@ -91,59 +92,36 @@ jobs:
         mv -n `find $1/* -maxdepth 0 -type d` ./
         rm -rf $1
         }
-        (        
         git_clone https://github.com/sirpdboy/luci-app-advanced
         git_clone https://github.com/NateLol/luci-app-beardropper
-        ) & (
         git_clone https://github.com/sirpdboy/luci-app-netdata
         git_clone https://github.com/rufengsuixing/luci-app-onliner
-        ) & (
         git_clone https://github.com/honwen/luci-app-aliddns
-        ) & (
         git_clone https://github.com/sirpdboy/luci-app-autotimeset
         git_clone https://github.com/esirplayground/luci-app-poweroff
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
         git_clone https://github.com/sirpdboy/luci-app-parentcontrol
-        ) & (
         svn export https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
-        ) & (
         git_clone https://github.com/zzsj0928/luci-app-pushbot
         git_clone https://github.com/tty228/luci-app-wechatpush
-        ) & (
         git_clone https://github.com/fw876/helloworld
-        ) & (
         git_clone https://github.com/xiaorouji/openwrt-passwall-packages
         svn export https://github.com/xiaorouji/openwrt-passwall/trunk/luci-app-passwall
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
-        ) & (
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
-        ) & (
         svn export https://github.com/doushang/luci-app-shortcutmenu/trunk/luci-app-shortcutmenu
         svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest
         svn export https://github.com/sirpdboy/netspeedtest/trunk/homebox
         svn export https://github.com/messense/aliyundrive-webdav/trunk/openwrt && mvdir openwrt
-        ) & (
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
-        ) & (
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
         svn export https://github.com/immortalwrt-collections/openwrt-cdnspeedtest/trunk/cdnspeedtest
-        ) & (
         git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
-        ) & (
         git_clone https://github.com/sbwml/luci-app-mosdns.git mos
-        git_clone https://github.com/pymumu/openwrt-smartdns smartdns
-        git_branch_clone lede https://github.com/pymumu/luci-app-smartdns
-        ) & (
         git_branch_clone master https://github.com/jerrykuku/luci-theme-argon
         git_branch_clone master https://github.com/jerrykuku/luci-app-argon-config
-        )
-        for ipk in $(ls applications); do
-        	if [[ $(ls -l applications/$ipk/po | wc -l) -gt 3 ]]; then
-        		rm -rf applications/$ipk
-        	fi
-        done
         
     - name: Delete duplicated packages
       continue-on-error: true
@@ -185,4 +163,3 @@ jobs:
       with:
         retain_days: 1
         keep_minimum_runs: 3
-        
