@@ -16,7 +16,6 @@
 | [luci-app-advanced](https://github.com/sirpdboy/luci-app-advanced) | 高级设置，包括smartdns，openclash，防火墙，DHCP等            |
 | [luci-app-aliddns](https://github.com/honwen/luci-app-aliddns) | AliDDNS 的 LuCI 控制界面                                     |
 | [luci-app-aliyundrive-webdav](https://github.com/messense/aliyundrive-webdav/) | 阿里云盘 WebDAV 服务                                         |
-| [luci-app-go-aliyundrive-webdav](https://github.com/jerrykuku/luci-app-go-aliyundrive-webdav) | [go-aliyun-webdav](https://github.com/LinkLeong/go-aliyun-webdav) 的Luci 控制面板 |
 | [luci-theme-argon](https://github.com/jerrykuku/luci-theme-argon) | argon主题                           |
 | [luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config) | argon主题设置                                                |
 | [luci-app-autotimeset](https://github.com/sirpdboy/luci-app-autotimeset) | 定时设置                                                     |
