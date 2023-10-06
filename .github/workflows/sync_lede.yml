@@ -5,6 +5,8 @@
 name: Merge-Upstream-Lede
 on:
   push:
+    branches:
+      - Lede
     paths:
       - '.github/workflows/sync_lede.yml'
       - '.gitignore'
@@ -53,6 +55,8 @@ jobs:
           git clone --depth 1 $1 $2 || true
           if [ "$?" != 0 ]; then
             echo "error on $1"
+            pid="$( ps -q $$ )"
+            kill $pid
           fi
         }
         function git_branch_clone() {
@@ -61,6 +65,11 @@ jobs:
         function git_sparse_clone() {
           branch="$1" rurl="$2" localdir="$3" && shift 3
           git clone -b $branch --depth 1 --filter=blob:none --sparse $rurl $localdir
+          if [ "$?" != 0 ]; then
+            echo "error on $rurl"
+            pid="$( ps -q $$ )"
+            kill $pid
+          fi
           cd $localdir
           git sparse-checkout init --cone
           git sparse-checkout set $@
