@@ -33,7 +33,7 @@ jobs:
         echo github.event_name is: ${{ github.event_name }}
         
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -50,11 +50,9 @@ jobs:
         git rm -r --cache * >/dev/null 2>&1 &
         rm -rf `find ./* -maxdepth 0 -type d ! -name ".github/diy"` >/dev/null 2>&1
         function git_clone() {
-          git clone --depth 1 $1 $2
+          git clone --depth 1 $1 $2 || true
           if [ "$?" != 0 ]; then
             echo "error on $1"
-            pid="$( ps -q $$ )"
-            kill $pid
           fi
         }
         function git_branch_clone() {
@@ -63,11 +61,6 @@ jobs:
         function git_sparse_clone() {
           branch="$1" rurl="$2" localdir="$3" && shift 3
           git clone -b $branch --depth 1 --filter=blob:none --sparse $rurl $localdir
-          if [ "$?" != 0 ]; then
-            echo "error on $rurl"
-            pid="$( ps -q $$ )"
-            kill $pid
-          fi
           cd $localdir
           git sparse-checkout init --cone
           git sparse-checkout set $@
@@ -90,53 +83,38 @@ jobs:
         mv -n `find $1/* -maxdepth 0 -type d` ./
         rm -rf $1
         }
-        (
         git_clone https://github.com/jerrykuku/luci-app-argon-config
         git_clone https://github.com/sirpdboy/luci-app-advanced
         git_clone https://github.com/NateLol/luci-app-beardropper
-        ) & (
         git_clone https://github.com/rufengsuixing/luci-app-onliner
-        ) & (
         git_clone https://github.com/honwen/luci-app-aliddns
-        ) & (
         git_clone https://github.com/sirpdboy/luci-app-autotimeset
         git_clone https://github.com/esirplayground/luci-app-poweroff
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
         git_clone https://github.com/sirpdboy/luci-app-parentcontrol
-        ) & (
         git_clone https://github.com/tty228/luci-app-wechatpush
-        ) & (
         git_clone https://github.com/fw876/helloworld
-        ) & (
         git_clone https://github.com/xiaorouji/openwrt-passwall-packages
         svn export https://github.com/xiaorouji/openwrt-passwall/trunk/luci-app-passwall
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
-        ) & (
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
-        ) & (
         svn export https://github.com/doushang/luci-app-shortcutmenu/trunk/luci-app-shortcutmenu
         svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest
         svn export https://github.com/sirpdboy/netspeedtest/trunk/homebox
-        ) & (
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
-        ) & (
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
         svn export https://github.com/immortalwrt-collections/openwrt-cdnspeedtest/trunk/cdnspeedtest
-        ) & (
         git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
-        ) & (
         git_clone https://github.com/pymumu/openwrt-smartdns smartdns
         git_branch_clone lede https://github.com/pymumu/luci-app-smartdns
-        ) & (
         git_clone https://github.com/openwrt-develop/luci-theme-atmaterial
         git_clone https://github.com/sirpdboy/luci-theme-btmod
         git_clone https://github.com/netitgo/luci-theme-jj
         git_clone https://github.com/thinktip/luci-theme-neobird
         git_clone https://github.com/sirpdboy/luci-theme-opentopd
         git_branch_clone 18.06 https://github.com/jerrykuku/luci-theme-argon
-        )
         
     - name: Delete duplicated packages
       continue-on-error: true
@@ -177,4 +155,3 @@ jobs:
       with:
         retain_days: 1
         keep_minimum_runs: 3
-        
