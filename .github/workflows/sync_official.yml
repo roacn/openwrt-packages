@@ -8,11 +8,11 @@ on:
     branches:
       - Official
     paths:
-      - '.github/workflows/sync.yml'
+      - '.github/workflows/sync_official.yml'
       - '.gitignore'
       - '.github/diy/**'
   schedule:
-    - cron: 25 */12 * * *
+    - cron: 25 */8 * * *
   workflow_dispatch:
     inputs:
       ssh:
