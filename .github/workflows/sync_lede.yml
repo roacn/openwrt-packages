@@ -107,8 +107,6 @@ jobs:
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
         svn export https://github.com/immortalwrt-collections/openwrt-cdnspeedtest/trunk/cdnspeedtest
         git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
-        git_clone https://github.com/pymumu/openwrt-smartdns smartdns
-        git_branch_clone lede https://github.com/pymumu/luci-app-smartdns
         git_clone https://github.com/openwrt-develop/luci-theme-atmaterial
         git_clone https://github.com/sirpdboy/luci-theme-btmod
         git_clone https://github.com/netitgo/luci-theme-jj
