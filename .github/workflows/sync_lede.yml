@@ -145,8 +145,8 @@ jobs:
     - name: Modify
       continue-on-error: true
       run: |
-        bash .github/diy/create_acl_for_luci.sh -a >/dev/null 2>&1 || true
-        bash .github/diy/convert_translation.sh -a >/dev/null 2>&1 || true
+        bash .github/diy/create_acl_for_luci.sh || true
+        bash .github/diy/convert_translation.sh || true
       
     - name: SSH connection to Actions
       uses: kiddin9/debugger-action@master
