@@ -92,15 +92,19 @@ jobs:
         mv -n `find $1/* -maxdepth 0 -type d` ./
         rm -rf $1
         }
-        git_clone https://github.com/honwen/luci-app-aliddns
         git_clone https://github.com/sirpdboy/luci-app-advanced
+        git_clone https://github.com/honwen/luci-app-aliddns
+        svn export https://github.com/messense/aliyundrive-webdav/trunk/openwrt && mvdir openwrt
         git_clone https://github.com/sirpdboy/luci-app-autotimeset
         git_clone https://github.com/NateLol/luci-app-beardropper
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
         svn export https://github.com/immortalwrt-collections/openwrt-cdnspeedtest/trunk/cdnspeedtest
+        svn export https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
         git_clone https://github.com/sbwml/luci-app-mosdns.git mos
+        git_clone https://github.com/sirpdboy/luci-app-netdata
         svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest
         svn export https://github.com/sirpdboy/netspeedtest/trunk/homebox
+        svn export https://github.com/coolsnowwolf/gargoyle/trunk/package/addon/lean/vsftpd-alt
         git_clone https://github.com/rufengsuixing/luci-app-onliner
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
         git_clone https://github.com/sirpdboy/luci-app-parentcontrol
