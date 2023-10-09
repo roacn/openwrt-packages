@@ -42,6 +42,6 @@
 | luci-app-tencentddns                                         | 腾讯DDNS                                                     |
 | luci-app-unblockmusic                                        | 解除网易云音乐播放限制                                       |
 | [luci-app-unblockneteasemusic](https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic) | 解除网易云音乐播放限制                                       |
-| [luci-app-wechatpush](https://github.com/tty228/luci-app-wechatpush.git) | 微信/Telegram 推送                                           |
+| [luci-app-wechatpush](https://github.com/tty228/luci-app-wechatpush.git) | 微信/Telegram 推送(luci-app-serverchan)                                           |
 | luci-app-wifidog                                             | wifidog的luci管理界面                                        |
 | luci-app-wolplus                                             | 网络唤醒                                                     |
