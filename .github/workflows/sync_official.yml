@@ -119,14 +119,13 @@ jobs:
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
         git_clone https://github.com/tty228/luci-app-wechatpush
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
-
-
+        git_branch_clone js https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
+        
         git_clone https://github.com/fw876/helloworld
         git_clone https://github.com/xiaorouji/openwrt-passwall-packages
         svn export https://github.com/xiaorouji/openwrt-passwall/trunk/luci-app-passwall
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
         
-        git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         git_branch_clone master https://github.com/jerrykuku/luci-theme-argon
         git_branch_clone master https://github.com/jerrykuku/luci-app-argon-config
         
