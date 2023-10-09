@@ -113,7 +113,7 @@ jobs:
         git_clone https://github.com/zzsj0928/luci-app-pushbot
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
         svn export https://github.com/doushang/luci-app-shortcutmenu/trunk/luci-app-shortcutmenu
-        git_branch_clone master https://github.com/pymumu/luci-app-smartdns
+        git_clone https://github.com/pymumu/luci-app-smartdns
         git_clone https://github.com/pymumu/openwrt-smartdns smartdns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
