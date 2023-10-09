@@ -16,9 +16,10 @@ on:
   workflow_dispatch:
     inputs:
       ssh:
-        description: 'ssh'
+        description: '开启SSH远程配置'
         required: false
         default: 'false'
+        type: boolean
   watch:
     types: started
   repository_dispatch:
