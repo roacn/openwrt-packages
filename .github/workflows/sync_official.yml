@@ -101,9 +101,9 @@ jobs:
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
         svn export https://github.com/immortalwrt-collections/openwrt-cdnspeedtest/trunk/cdnspeedtest
         svn export https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
-        git_clone https://github.com/sbwml/luci-app-mosdns.git mos        
+        git_clone https://github.com/sbwml/luci-app-mosdns.git mos
         git_clone https://github.com/sirpdboy/luci-app-netdata
-        svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest        
+        svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest
         svn export https://github.com/sirpdboy/netspeedtest/trunk/homebox
         svn export https://github.com/coolsnowwolf/gargoyle/trunk/package/addon/lean/vsftpd-alt
         git_clone https://github.com/rufengsuixing/luci-app-onliner
@@ -113,17 +113,20 @@ jobs:
         git_clone https://github.com/zzsj0928/luci-app-pushbot
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
         svn export https://github.com/doushang/luci-app-shortcutmenu/trunk/luci-app-shortcutmenu
+        git_branch_clone master https://github.com/pymumu/luci-app-smartdns
+        git_clone https://github.com/pymumu/openwrt-smartdns smartdns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
-        svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos        
+        svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
         git_clone https://github.com/tty228/luci-app-wechatpush
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
-        git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
+
 
         git_clone https://github.com/fw876/helloworld
         git_clone https://github.com/xiaorouji/openwrt-passwall-packages
         svn export https://github.com/xiaorouji/openwrt-passwall/trunk/luci-app-passwall
-        svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2        
+        svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
         
+        git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         git_branch_clone master https://github.com/jerrykuku/luci-theme-argon
         git_branch_clone master https://github.com/jerrykuku/luci-app-argon-config
         
