@@ -105,7 +105,6 @@ jobs:
         git_clone https://github.com/sirpdboy/luci-app-netdata
         svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest
         svn export https://github.com/sirpdboy/netspeedtest/trunk/homebox
-        svn export https://github.com/coolsnowwolf/gargoyle/trunk/package/addon/lean/vsftpd-alt
         git_clone https://github.com/rufengsuixing/luci-app-onliner
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
         git_clone https://github.com/sirpdboy/luci-app-parentcontrol
