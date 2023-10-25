@@ -125,6 +125,7 @@ jobs:
         svn export https://github.com/coolsnowwolf/packages/trunk/multimedia/UnblockNeteaseMusic-Go
         svn export https://github.com/coolsnowwolf/packages/trunk/multimedia/UnblockNeteaseMusic
         svn export https://github.com/coolsnowwolf/lede/trunk/package/lean/upx
+        svn export https://github.com/coolsnowwolf/lede/trunk/package/lean/ucl
         
         git_clone https://github.com/fw876/helloworld
         git_clone https://github.com/xiaorouji/openwrt-passwall-packages
