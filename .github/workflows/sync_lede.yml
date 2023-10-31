@@ -100,6 +100,7 @@ jobs:
         git_clone https://github.com/NateLol/luci-app-beardropper
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
         svn export https://github.com/immortalwrt-collections/openwrt-cdnspeedtest/trunk/cdnspeedtest
+        git_clone https://github.com/sirpdboy/luci-app-ddns-go
         svn export https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
         git_clone https://github.com/sbwml/luci-app-mosdns.git mos
         git_clone https://github.com/sirpdboy/luci-app-netdata
@@ -108,7 +109,9 @@ jobs:
         git_clone https://github.com/rufengsuixing/luci-app-onliner
         svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
         git_clone https://github.com/sirpdboy/luci-app-parentcontrol
+        git_clone https://github.com/sirpdboy/luci-app-partexp
         git_clone https://github.com/esirplayground/luci-app-poweroff
+        git_clone https://github.com/sirpdboy/luci-app-poweroffdevice
         git_clone https://github.com/zzsj0928/luci-app-pushbot
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
         svn export https://github.com/doushang/luci-app-shortcutmenu/trunk/luci-app-shortcutmenu
