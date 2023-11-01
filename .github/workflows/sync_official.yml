@@ -121,7 +121,7 @@ jobs:
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
         #git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         git_branch_clone js https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
-        git_clone https://github.com/maxlicheng/luci-app-unblockmusic.git
+        #git_clone https://github.com/maxlicheng/luci-app-unblockmusic.git
         
         git_clone https://github.com/fw876/helloworld
         git_clone https://github.com/xiaorouji/openwrt-passwall-packages
