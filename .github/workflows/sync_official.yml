@@ -101,7 +101,6 @@ jobs:
         git_clone https://github.com/NateLol/luci-app-beardropper
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
         svn export https://github.com/immortalwrt-collections/openwrt-cdnspeedtest/trunk/cdnspeedtest
-        svn export https://github.com/lisaac/luci-app-dockerman/trunk/applications/luci-app-dockerman
         git_clone https://github.com/sbwml/luci-app-mosdns.git mos
         git_clone https://github.com/sirpdboy/luci-app-netdata
         svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest
