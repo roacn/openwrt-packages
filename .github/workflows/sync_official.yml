@@ -52,17 +52,25 @@ jobs:
         set +e
         git rm -r --cache * >/dev/null 2>&1 &
         rm -rf `find ./* -maxdepth 0 -type d ! -name ".github/diy"` >/dev/null 2>&1
+        
         function git_clone() {
-          git clone --depth 1 $1 $2 || true
+          git clone --depth 1 $1 $2
           if [ "$?" != 0 ]; then
             echo "error on $1"
             pid="$( ps -q $$ )"
             kill $pid
           fi
         }
+        
         function git_branch_clone() {
-          git clone --depth=1 -b $1 $2 || true
+          git clone --depth 1 -b $1 $2 $3
+          if [ "$?" != 0 ]; then
+            echo "error on $2"
+            pid="$( ps -q $$ )"
+            kill $pid
+          fi
         }
+        
         function git_sparse_clone() {
           branch="$1" rurl="$2" localdir="$3" && shift 3
           git clone -b $branch --depth 1 --filter=blob:none --sparse $rurl $localdir
@@ -77,7 +85,8 @@ jobs:
           mv -n $@ ../ || true
           cd ..
           rm -rf $localdir
-          }
+        }
+        
         function git_sparse_clone2() {
           commitid="$1" rurl="$2" localdir="$3" && shift 3
           git clone --filter=blob:none --sparse $rurl $localdir
@@ -89,9 +98,15 @@ jobs:
           cd ..
           rm -rf $localdir
         }
+        
         function mvdir() {
-        mv -n `find $1/* -maxdepth 0 -type d` ./
-        rm -rf $1
+          mv -n `find $1/* -maxdepth 0 -type d` ./
+          rm -rf $1
+        }
+        
+        function mvdir_force() {
+          mv -f `find $1/* -maxdepth 0 -type d` ./
+          rm -rf $1
         }
         
         git_clone https://github.com/sirpdboy/luci-app-advanced
@@ -123,10 +138,10 @@ jobs:
         git_branch_clone js https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         #git_clone https://github.com/maxlicheng/luci-app-unblockmusic.git
         
-        git_branch_clone main https://github.com/fw876/helloworld
-        git_clone https://github.com/xiaorouji/openwrt-passwall-packages
+        git_clone https://github.com/xiaorouji/openwrt-passwall-packages && mvdir_force openwrt-passwall-packages
         svn export https://github.com/xiaorouji/openwrt-passwall/trunk/luci-app-passwall
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
+        git_branch_clone main https://github.com/fw876/helloworld && mvdir helloworld
         
         git_branch_clone master https://github.com/jerrykuku/luci-theme-argon
         git_branch_clone master https://github.com/jerrykuku/luci-app-argon-config
@@ -135,8 +150,6 @@ jobs:
       continue-on-error: true
       run: |
         shopt -s extglob
-        mv -f openwrt-passwall-packages/* ./ ; rm -rf openwrt-passwall-packages
-        mv -n helloworld/* ./ ; rm -rf helloworld
         mv -n cloudflarespeedtest/applications/luci-app-cloudflarespeedtest luci-app-cloudflarespeedtest ; rm -rf cloudflarespeedtest
         mv -n mos/luci-app-mosdns luci-app-mosdns && mv -n mos/mosdns mosdns && mv -n mos/v2dat v2dat ; rm -rf mos
         cp -rf .github/diy/packages/* ./ || true
