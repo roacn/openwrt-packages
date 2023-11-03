@@ -1,0 +1,1422 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008-2011 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+<%
+	local fs = require "nixio.fs"
+	local util = require "luci.util"
+	local stat = require "luci.tools.status"
+	local ver = require "luci.version"
+
+	local has_ipv6 = fs.access("/usr/sbin/ip6tables")
+	local has_dhcp = fs.access("/etc/config/dhcp")
+	local has_wifi = ((fs.stat("/etc/config/wireless", "size") or 0) > 0)
+
+	local sysinfo = luci.util.ubus("system", "info") or { }
+	local boardinfo = luci.util.ubus("system", "board") or { }
+	local unameinfo = nixio.uname() or { }
+
+	local meminfo = sysinfo.memory or {
+		total = 0,
+		free = 0,
+		buffered = 0,
+		shared = 0
+	}
+	
+	local mem_cached = luci.sys.exec("sed -e '/^Cached: /!d; s#Cached: *##; s# kB##g' /proc/meminfo")
+
+	local swapinfo = sysinfo.swap or {
+		total = 0,
+		free = 0
+	}
+
+	local has_dsl = fs.access("/etc/init.d/dsl_control")
+
+	if luci.http.formvalue("status") == "1" then
+		local ntm = require "luci.model.network".init()
+		local wan = ntm:get_wannet()
+		local wan6 = ntm:get_wan6net()
+
+		local conn_count = tonumber(
+			fs.readfile("/proc/sys/net/netfilter/nf_conntrack_count") or "") or 0
+
+		local conn_max = tonumber(luci.sys.exec(
+			"sysctl -n -e net.nf_conntrack_max net.ipv4.netfilter.ip_conntrack_max"
+		):match("%d+")) or 4096
+
+		local cpu_info = luci.sys.exec("cpuinfo")
+
+		local eth_info = luci.sys.exec("ethinfo")
+
+		local user_info = luci.sys.exec("cat /proc/net/arp | grep '0x2' | wc -l") or 0
+		
+		local cpu_usage = (luci.sys.exec("expr 100 - $(top -n 1 | grep 'CPU:' | awk -F '%' '{print$4}' | awk -F ' ' '{print$2}')") or "6") .. "%"
+
+		local rv = {
+			cpuusage    = cpu_usage,
+			cpuinfo    = cpu_info,
+			ethinfo    = eth_info,
+			userinfo    = user_info,
+			uptime     = sysinfo.uptime or 0,
+			localtime  = os.date("%Y年%m月%d日 %H:%M:%S", os.time()),
+			loadavg    = sysinfo.load or { 0, 0, 0 },
+			memory     = meminfo,
+			memcached  = mem_cached,
+			swap       = swapinfo,
+			connmax    = conn_max,
+			conncount  = conn_count,
+			leases     = stat.dhcp_leases(),
+			leases6    = stat.dhcp6_leases(),
+			wifinets   = stat.wifi_networks()
+		}
+
+		if wan then
+			rv.wan = {
+				ipaddr  = wan:ipaddr(),
+				gwaddr  = wan:gwaddr(),
+				netmask = wan:netmask(),
+				dns     = wan:dnsaddrs(),
+				expires = wan:expires(),
+				uptime  = wan:uptime(),
+				proto   = wan:proto(),
+				ifname  = wan:ifname(),
+				link    = wan:adminlink()
+			}
+		end
+
+		if wan6 then
+			rv.wan6 = {
+				ip6addr   = wan6:ip6addr(),
+				gw6addr   = wan6:gw6addr(),
+				dns       = wan6:dns6addrs(),
+				ip6prefix = wan6:ip6prefix(),
+				uptime    = wan6:uptime(),
+				proto     = wan6:proto(),
+				ifname    = wan6:ifname(),
+				link      = wan6:adminlink()
+			}
+		end
+
+		if has_dsl then
+			local dsl_stat = luci.sys.exec("/etc/init.d/dsl_control lucistat")
+			local dsl_func = loadstring(dsl_stat)
+			if dsl_func then
+				rv.dsl = dsl_func()
+			end
+		end
+
+		luci.http.prepare_content("application/json")
+		luci.http.write_json(rv)
+
+		return
+	elseif luci.http.formvalue("hosts") == "1" then
+		luci.http.prepare_content("application/json")
+		luci.http.write_json(luci.sys.net.host_hints())
+
+		return
+	end
+-%>
+
+<%+header%>
+
+<script src="<%=resource%>/cbi.js?v=git-19.167.54478-71e2af4"></script>
+<script>//<![CDATA[
+
+	function progressbar(v, m)
+		{
+			var vn = parseInt(v) || 0;
+			var mn = parseInt(m) || 100;
+			var pc = Math.floor((100 / mn) * vn);
+	
+			return String.format(
+				'<div style="width:70%%; position:relative; border:1px solid #999999">' +
+					'<div style="background-color:#619D54; width:%d%%; height:25px">' +
+						'<div style="position:absolute; left:0; top:5px; text-align:center; width:100%%; color:#020301">' +
+							'<small>%s / %s (%d%%)</small>' +
+						'</div>' +
+					'</div>' +
+				'</div>', pc, v, m, pc
+			);
+		}
+	
+		function progressbar_conns(v, m)
+			{
+				var vn = parseInt(v) || 0;
+				var mn = parseInt(m) || 100;
+				var pc = Math.floor((100 / mn) * vn);
+		
+				return String.format(
+							'<div class="conns_bar" style="--p:%d%%">%s / %s (%d%%)</div>', pc, v, m, pc
+				);
+			}
+
+	function progressbar1(v, m)
+	{
+		var vn = parseInt(v) || 0;
+		var mn = parseInt(m) || 100;
+		var un = mn - vn;
+		var pc = Math.floor((100 / mn) * vn);
+		var unpc = Math.floor((100 / mn) * un);
+
+		return String.format(
+			'<div class="progressbar_container" >' +
+				'<div class="progressbar_mem_used" style="width:%d%%;">' +
+					'<small class="progressbar_mem_used_number" >%s MB</small>' +
+				'</div>' +
+				'<div class="progressbar_info">' +
+					'<small>%s (%d%%)</small>' +
+				'</div>' +
+			'</div>', unpc, un, v, pc
+		);
+	}
+
+	function progressbar2(v, m)
+		{
+			var vn = parseInt(v) || 0;
+			var mn = parseInt(m) || 100;
+			var pc = Math.floor((100 / mn) * vn);
+	
+			return String.format(
+				'<div class="progressbar_container">' +
+					'<div class="progressbar_red" style="width:%d%%;float: left;">' +
+						'<div class="progressbar_info">' +
+							'<small>%s / %s (%d%%)</small>' +
+						'</div>' +
+					'</div>' +
+				'</div>', pc, v, m, pc
+			);
+		}
+
+		function progressbar3(v, m)
+			{
+				var vn = parseInt(v) || 0;
+				var mn = parseInt(m) || 100;
+				var pc = Math.floor((100 / mn) * vn);
+		
+				return String.format(
+					'<div class="progressbar_container">' +
+						'<div class="progressbar_red" style="width:%d%%;float: left;">' +
+							'<div class="progressbar_info">' +
+								'<small>%s</small>' +
+							'</div>' +
+						'</div>' +
+					'</div>', pc, v, m, pc
+				);
+			}
+
+	function wifirate(bss, rx) {
+		var p = rx ? 'rx_' : 'tx_',
+		    s = '%.1f <%:Mbit/s%>, %d<%:MHz%>'
+					.format(bss[p+'rate'] / 1000, bss[p+'mhz']),
+		    ht = bss[p+'ht'], vht = bss[p+'vht'],
+			mhz = bss[p+'mhz'], nss = bss[p+'nss'],
+			mcs = bss[p+'mcs'], sgi = bss[p+'short_gi'];
+
+		if (ht || vht) {
+			if (vht) s += ', VHT-MCS %d'.format(mcs);
+			if (nss) s += ', VHT-NSS %d'.format(nss);
+			if (ht)  s += ', MCS %s'.format(mcs);
+			if (sgi) s += ', <%:Short GI%>';
+		}
+
+		return s;
+	}
+
+	function duid2mac(duid) {
+		// DUID-LLT / Ethernet
+		if (duid.length === 28 && duid.substr(0, 8) === '00010001')
+			return duid.substr(16).replace(/(..)(?=..)/g, '$1:').toUpperCase();
+
+		// DUID-LL / Ethernet
+		if (duid.length === 20 && duid.substr(0, 8) === '00030001')
+			return duid.substr(8).replace(/(..)(?=..)/g, '$1:').toUpperCase();
+
+		return null;
+	}
+
+	var npoll = 1;
+	var hosts = <%=luci.http.write_json(luci.sys.net.host_hints())%>;
+
+	function updateHosts() {
+		XHR.get('<%=REQUEST_URI%>', { hosts: 1 }, function(x, data) {
+			hosts = data;
+		});
+	}
+	var RX_Bytes_Array=[],TX_Bytes_Array=[];
+	function getNetworkDataUsage(){
+		XHR.get('/cgi-bin/luci/admin/network/iface_status/lan', null, function(x, ifc) {
+			ifc = ifc[0];
+			RX_Bytes_Array.push(ifc.rx_bytes);
+			TX_Bytes_Array.push(ifc.tx_bytes);
+			//oldRX_GB=byteToGb(ifc.rx_bytes));
+		});
+
+		function byteToGb(byte){
+			return (byte/(1000**3)).toFixed(2);
+		}
+	}
+	
+
+	XHR.poll(1, '<%=REQUEST_URI%>', { status: 1 },
+		function(x, info)
+		{
+			if (!(npoll++ % 5)){
+				updateHosts();
+			}
+
+			getNetworkDataUsage()
+			if(RX_Bytes_Array.length>1){
+				RX_Speed_MB = (RX_Bytes_Array[RX_Bytes_Array.length-1]-RX_Bytes_Array[RX_Bytes_Array.length-2])/1048576;
+				console.log(RX_Speed_MB);
+			}
+			if(TX_Bytes_Array.length>1){
+				TX_Speed_MB = (TX_Bytes_Array[TX_Bytes_Array.length-1]-TX_Bytes_Array[TX_Bytes_Array.length-2])/1048576;
+				console.log(TX_Speed_MB);
+			}
+			
+			var si = document.getElementById('wan4_i');
+			var ss = document.getElementById('wan4_s');
+			var ifc = info.wan;
+
+			if (ifc && ifc.ifname && ifc.proto != 'none')
+			{
+				var s = String.format(
+					'<strong><%:Type%>: </strong>%s<br />' +
+					'<strong><%:Address%>: </strong>%s<br />' +
+					'<strong><%:Netmask%>: </strong>%s<br />' +
+					'<strong><%:Gateway%>: </strong>%s<br />',
+						ifc.proto,
+						(ifc.ipaddr) ? ifc.ipaddr : '0.0.0.0',
+						(ifc.netmask && ifc.netmask != ifc.ipaddr) ? ifc.netmask : '255.255.255.255',
+						(ifc.gwaddr) ? ifc.gwaddr : '0.0.0.0'
+				);
+
+				for (var i = 0; i < ifc.dns.length; i++)
+				{
+					s += String.format(
+						'<strong><%:DNS%> %d: </strong>%s<br />',
+						i + 1, ifc.dns[i]
+					);
+				}
+
+				if (ifc.expires > -1)
+				{
+					s += String.format(
+						'<strong><%:Expires%>: </strong>%t<br />',
+						ifc.expires
+					);
+				}
+
+				if (ifc.uptime > 0)
+				{
+					s += String.format(
+						'<strong><%:Connected%>: </strong>%t<br />',
+						ifc.uptime
+					);
+				}
+
+				ss.innerHTML = String.format('<small>%s</small>', s);
+				si.innerHTML = String.format(
+					'<img src="<%=media%>/icons/port_up.svg" />' +
+					'<br /><small><a href="%s">%s</a></small>',
+						ifc.link, ifc.ifname
+				);
+			}
+			else
+			{
+				si.innerHTML = '<img src="<%=media%>/icons/port_down.svg" /><br /><small>?</small>';
+				ss.innerHTML = '<em><%:Not connected%></em>';
+			}
+
+			<% if has_ipv6 then %>
+			var si6 = document.getElementById('wan6_i');
+			var ss6 = document.getElementById('wan6_s');
+			var ifc6 = info.wan6;
+
+			if (ifc6 && ifc6.ifname && ifc6.proto != 'none')
+			{
+				var s = String.format(
+					'<strong><%:Type%>: </strong>%s%s<br />',
+						ifc6.proto, (ifc6.ip6prefix) ? '-pd' : ''
+				);
+				
+				if (!ifc6.ip6prefix)
+				{
+					s += String.format(
+						'<strong><%:Address%>: </strong>%s<br />',
+						(ifc6.ip6addr) ? ifc6.ip6addr : '::'
+					);
+				}
+				else
+				{
+					s += String.format(
+						'<strong><%:Prefix Delegated%>: </strong>%s<br />',
+						ifc6.ip6prefix
+					);
+					if (ifc6.ip6addr)
+					{
+						s += String.format(
+							'<strong><%:Address%>: </strong>%s<br />',
+							ifc6.ip6addr
+						);
+					}
+				}
+
+				s += String.format(
+					'<strong><%:Gateway%>: </strong>%s<br />',
+						(ifc6.gw6addr) ? ifc6.gw6addr : '::'
+				);
+
+				for (var i = 0; i < ifc6.dns.length; i++)
+				{
+					s += String.format(
+						'<strong><%:DNS%> %d: </strong>%s<br />',
+						i + 1, ifc6.dns[i]
+					);
+				}
+
+				if (ifc6.uptime > 0)
+				{
+					s += String.format(
+						'<strong><%:Connected%>: </strong>%t<br />',
+						ifc6.uptime
+					);
+				}
+
+				ss6.innerHTML = String.format('<small>%s</small>', s);
+				si6.innerHTML = String.format(
+					'<img src="<%=media%>/icons/port_up.svg" />' +
+					'<br /><small><a href="%s">%s</a></small>',
+						ifc6.link, ifc6.ifname
+				);
+			}
+			else
+			{
+				si6.innerHTML = '<img src="<%=media%>/icons/port_down.svg" /><br /><small>?</small>';
+				ss6.innerHTML = '<em><%:Not connected%></em>';
+			}
+			<% end %>
+
+			<% if has_dsl then %>
+				var dsl_i = document.getElementById('dsl_i');
+				var dsl_s = document.getElementById('dsl_s');
+
+				var s = String.format(
+					'<strong><%:Status%>: </strong>%s<br />' +
+					'<strong><%:Line State%>: </strong>%s [0x%x]<br />' +
+					'<strong><%:Line Mode%>: </strong>%s<br />' +
+					'<strong><%:Annex%>: </strong>%s<br />' +
+					'<strong><%:Profile%>: </strong>%s<br />' +
+					'<strong><%:Data Rate%>: </strong>%s/s / %s/s<br />' +
+					'<strong><%:Max. Attainable Data Rate (ATTNDR)%>: </strong>%s/s / %s/s<br />' +
+					'<strong><%:Latency%>: </strong>%s / %s<br />' +
+					'<strong><%:Line Attenuation (LATN)%>: </strong>%s dB / %s dB<br />' +
+					'<strong><%:Signal Attenuation (SATN)%>: </strong>%s dB / %s dB<br />' +
+					'<strong><%:Noise Margin (SNR)%>: </strong>%s dB / %s dB<br />' +
+					'<strong><%:Aggregate Transmit Power(ACTATP)%>: </strong>%s dB / %s dB<br />' +
+					'<strong><%:Forward Error Correction Seconds (FECS)%>: </strong>%s / %s<br />' +
+					'<strong><%:Errored seconds (ES)%>: </strong>%s / %s<br />' +
+					'<strong><%:Severely Errored Seconds (SES)%>: </strong>%s / %s<br />' +
+					'<strong><%:Loss of Signal Seconds (LOSS)%>: </strong>%s / %s<br />' +
+					'<strong><%:Unavailable Seconds (UAS)%>: </strong>%s / %s<br />' +
+					'<strong><%:Header Error Code Errors (HEC)%>: </strong>%s / %s<br />' +
+					'<strong><%:Non Pre-emtive CRC errors (CRC_P)%>: </strong>%s / %s<br />' +
+					'<strong><%:Pre-emtive CRC errors (CRCP_P)%>: </strong>%s / %s<br />' +
+					'<strong><%:Line Uptime%>: </strong>%s<br />' +
+					'<strong><%:ATU-C System Vendor ID%>: </strong>%s<br />' +
+					'<strong><%:Power Management Mode%>: </strong>%s<br />',
+						info.dsl.line_state, info.dsl.line_state_detail,
+						info.dsl.line_state_num,
+						info.dsl.line_mode_s,
+						info.dsl.annex_s,
+						info.dsl.profile_s,
+						info.dsl.data_rate_down_s, info.dsl.data_rate_up_s,
+						info.dsl.max_data_rate_down_s, info.dsl.max_data_rate_up_s,
+						info.dsl.latency_num_down, info.dsl.latency_num_up,
+						info.dsl.line_attenuation_down, info.dsl.line_attenuation_up,
+						info.dsl.signal_attenuation_down, info.dsl.signal_attenuation_up,
+						info.dsl.noise_margin_down, info.dsl.noise_margin_up,
+						info.dsl.actatp_down, info.dsl.actatp_up,
+						info.dsl.errors_fec_near, info.dsl.errors_fec_far,
+						info.dsl.errors_es_near, info.dsl.errors_es_far,
+						info.dsl.errors_ses_near, info.dsl.errors_ses_far,
+						info.dsl.errors_loss_near, info.dsl.errors_loss_far,
+						info.dsl.errors_uas_near, info.dsl.errors_uas_far,
+						info.dsl.errors_hec_near, info.dsl.errors_hec_far,
+						info.dsl.errors_crc_p_near, info.dsl.errors_crc_p_far,
+						info.dsl.errors_crcp_p_near, info.dsl.errors_crcp_p_far,
+						info.dsl.line_uptime_s,
+						info.dsl.atuc_vendor_id,
+						info.dsl.power_mode_s
+				);
+
+				dsl_s.innerHTML = String.format('<small>%s</small>', s);
+				dsl_i.innerHTML = String.format(
+					'<img src="<%=resource%>/icons/ethernet.png" />' +
+					'<br /><small>DSL</small>'
+				);
+			<% end %>
+
+			<% if has_dhcp then %>
+			var ls = document.getElementById('lease_status_table');
+			if (ls)
+			{
+				/* clear all rows */
+				while( ls.rows.length > 1 )
+					ls.rows[0].parentNode.deleteRow(1);
+
+				for( var i = 0; i < info.leases.length; i++ )
+				{
+					var timestr;
+
+					if (info.leases[i].expires === false)
+						timestr = '<em><%:unlimited%></em>';
+					else if (info.leases[i].expires <= 0)
+						timestr = '<em><%:expired%></em>';
+					else
+						timestr = String.format('%t', info.leases[i].expires);
+
+					var tr = ls.rows[0].parentNode.insertRow(-1);
+						tr.className = 'cbi-section-table-row cbi-rowstyle-' + ((i % 2) + 1);
+					
+					tr.insertCell(-1).innerHTML = i+1;
+					tr.insertCell(-1).innerHTML = info.leases[i].hostname ? info.leases[i].hostname : '?';
+					tr.insertCell(-1).innerHTML = info.leases[i].ipaddr;
+					tr.insertCell(-1).innerHTML = info.leases[i].macaddr;
+					tr.insertCell(-1).innerHTML = timestr;
+				}
+
+				if( ls.rows.length == 1 )
+				{
+					var tr = ls.rows[0].parentNode.insertRow(-1);
+						tr.className = 'cbi-section-table-row';
+
+					var td = tr.insertCell(-1);
+						td.colSpan = 4;
+						td.innerHTML = '<em><br /><%:There are no active leases.%></em>';
+				}
+			}
+
+			var ls6 = document.getElementById('lease6_status_table');
+			if (ls6 && info.leases6)
+			{
+				ls6.parentNode.style.display = 'block';
+
+				/* clear all rows */
+				while( ls6.rows.length > 1 )
+					ls6.rows[0].parentNode.deleteRow(1);
+
+				for( var i = 0; i < info.leases6.length; i++ )
+				{
+					var timestr;
+
+					if (info.leases6[i].expires === false)
+						timestr = '<em><%:unlimited%></em>';
+					else if (info.leases6[i].expires <= 0)
+						timestr = '<em><%:expired%></em>';
+					else
+						timestr = String.format('%t', info.leases6[i].expires);
+
+					var tr = ls6.rows[0].parentNode.insertRow(-1);
+						tr.className = 'cbi-section-table-row cbi-rowstyle-' + ((i % 2) + 1);
+
+					var host = hosts[duid2mac(info.leases6[i].duid)];
+					if (!info.leases6[i].hostname)
+						tr.insertCell(-1).innerHTML =
+							(host && (host.name || host.ipv4 || host.ipv6))
+								? '<div style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space: nowrap">? (%h)</div>'.format(host.name || host.ipv4 || host.ipv6)
+								: '?';
+					else
+						tr.insertCell(-1).innerHTML =
+							(host && host.name && info.leases6[i].hostname != host.name)
+								? '<div style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space: nowrap">%h (%h)</div>'.format(info.leases6[i].hostname, host.name)
+								: info.leases6[i].hostname;
+
+					tr.insertCell(-1).innerHTML = info.leases6[i].ip6addr;
+					tr.insertCell(-1).innerHTML = info.leases6[i].duid;
+					tr.insertCell(-1).innerHTML = timestr;
+				}
+
+				if( ls6.rows.length == 1 )
+				{
+					var tr = ls6.rows[0].parentNode.insertRow(-1);
+						tr.className = 'cbi-section-table-row';
+
+					var td = tr.insertCell(-1);
+						td.colSpan = 4;
+						td.innerHTML = '<em><br /><%:There are no active leases.%></em>';
+				}
+			}
+			<% end %>
+
+			<% if has_wifi then %>
+			var assoclist = [ ];
+
+			var ws = document.getElementById('wifi_status_table');
+			if (ws)
+			{
+				var wsbody = ws.rows[0].parentNode;
+				while (ws.rows.length > 0)
+					wsbody.deleteRow(0);
+
+				for (var didx = 0; didx < info.wifinets.length; didx++)
+				{
+					var dev = info.wifinets[didx];
+
+					var tr = wsbody.insertRow(-1);
+					var td;
+
+					td = tr.insertCell(-1);
+					td.width     = "33%";
+					td.innerHTML = dev.name;
+					td.style.verticalAlign = "top";
+
+					td = tr.insertCell(-1);
+
+					var s = '';
+
+					for (var nidx = 0; nidx < dev.networks.length; nidx++)
+					{
+						var net = dev.networks[nidx];
+						var is_assoc = (net.bssid != '00:00:00:00:00:00' && net.channel && !net.disabled);
+
+						var icon;
+						if (!is_assoc)
+							icon = "<%=resource%>/icons/signal-none.png";
+						else if (net.quality == 0)
+							icon = "<%=resource%>/icons/signal-0.png";
+						else if (net.quality < 25)
+							icon = "<%=resource%>/icons/signal-0-25.png";
+						else if (net.quality < 50)
+							icon = "<%=resource%>/icons/signal-25-50.png";
+						else if (net.quality < 75)
+							icon = "<%=resource%>/icons/signal-50-75.png";
+						else
+							icon = "<%=resource%>/icons/signal-75-100.png";
+
+						s += String.format(
+							'<table><tr><td style="text-align:center; width:32px; padding:3px">' +
+								'<img src="%s" title="<%:Signal%>: %d dBm / <%:Noise%>: %d dBm" />' +
+								'<br /><small>%d%%</small>' +
+							'</td><td style="text-align:left; padding:3px"><small>' +
+								'<strong><%:SSID%>:</strong> <a href="%s">%h</a><br />' +
+								'<strong><%:Mode%>:</strong> %s<br />' +
+								'<strong><%:Channel%>:</strong> %d (%.3f <%:GHz%>)<br />' +
+								'<strong><%:Bitrate%>:</strong> %s <%:Mbit/s%><br />',
+								icon, net.signal, net.noise,
+								net.quality,
+								net.link, net.ssid || '?',
+								net.mode,
+								net.channel, net.frequency,
+								net.bitrate || '?'
+						);
+
+						if (is_assoc)
+						{
+							s += String.format(
+								'<strong><%:BSSID%>:</strong> %s<br />' +
+								'<strong><%:Encryption%>:</strong> %s',
+									net.bssid || '?',
+									net.encryption
+							);
+						}
+						else
+						{
+							s += '<em><%:Wireless is disabled or not associated%></em>';
+						}
+
+						s += '</small></td></tr></table>';
+
+						for (var bssid in net.assoclist)
+						{
+							var bss = net.assoclist[bssid];
+
+							bss.bssid  = bssid;
+							bss.link   = net.link;
+							bss.name   = net.name;
+							bss.ifname = net.ifname;
+							bss.radio  = dev.name;
+
+							assoclist.push(bss);
+						}
+					}
+
+					if (!s)
+						s = '<em><%:No information available%></em>';
+
+					td.innerHTML = s;
+				}
+			}
+
+			var ac = document.getElementById('wifi_assoc_table');
+			if (ac)
+			{
+				/* clear all rows */
+				while( ac.rows.length > 1 )
+					ac.rows[0].parentNode.deleteRow(1);
+
+				assoclist.sort(function(a, b) {
+					return (a.name == b.name)
+						? (a.bssid < b.bssid)
+						: (a.name  > b.name )
+					;
+				});
+
+				for( var i = 0; i < assoclist.length; i++ )
+				{
+					var tr = ac.rows[0].parentNode.insertRow(-1);
+						tr.className = 'cbi-section-table-row cbi-rowstyle-' + (1 + (i % 2));
+
+					var icon;
+					var q = (-1 * (assoclist[i].noise - assoclist[i].signal)) / 5;
+					if (q < 1)
+						icon = "<%=resource%>/icons/signal-0.png";
+					else if (q < 2)
+						icon = "<%=resource%>/icons/signal-0-25.png";
+					else if (q < 3)
+						icon = "<%=resource%>/icons/signal-25-50.png";
+					else if (q < 4)
+						icon = "<%=resource%>/icons/signal-50-75.png";
+					else
+						icon = "<%=resource%>/icons/signal-75-100.png";
+
+					tr.insertCell(-1).innerHTML = String.format(
+						'<span class="ifacebadge" title="%q"><img src="<%=resource%>/icons/wifi.png" /> %h</span>',
+						assoclist[i].radio, assoclist[i].ifname
+					);
+
+					tr.insertCell(-1).innerHTML = String.format(
+						'<a href="%s">%s</a>',
+							assoclist[i].link,
+							'%h'.format(assoclist[i].name).nobr()
+					);
+
+					tr.insertCell(-1).innerHTML = assoclist[i].bssid;
+
+					var host = hosts[assoclist[i].bssid];
+					if (host)
+						tr.insertCell(-1).innerHTML = String.format(
+							'<div style="max-width:200px;overflow:hidden;text-overflow:ellipsis">%s</div>',
+							((host.name && (host.ipv4 || host.ipv6))
+								? '%h (%s)'.format(host.name, host.ipv4 || host.ipv6)
+								: '%h'.format(host.name || host.ipv4 || host.ipv6)).nobr()
+						);
+					else
+						tr.insertCell(-1).innerHTML = '?';
+
+					tr.insertCell(-1).innerHTML = String.format(
+						'<span class="ifacebadge" title="<%:Signal%>: %d <%:dBm%> / <%:Noise%>: %d <%:dBm%> / <%:SNR%>: %d"><img src="%s" /> %d / %d <%:dBm%></span>',
+						assoclist[i].signal, assoclist[i].noise, assoclist[i].signal - assoclist[i].noise,
+						icon,
+						assoclist[i].signal, assoclist[i].noise
+					);
+
+					tr.insertCell(-1).innerHTML = wifirate(assoclist[i], true).nobr() + '<br />' + wifirate(assoclist[i], false).nobr();
+				}
+
+				if (ac.rows.length == 1)
+				{
+					var tr = ac.rows[0].parentNode.insertRow(-1);
+						tr.className = 'cbi-section-table-row';
+
+					var td = tr.insertCell(-1);
+						td.colSpan = 7;
+						td.innerHTML = '<br /><em><%:No information available%></em>';
+				}
+			}
+			<% end %>
+
+			var e,node_des;
+
+			if (e = document.getElementById('ethinfo'))			{
+				var ports = eval('(' + info.ethinfo + ')');
+				var tmp = "";
+				for (var i in ports)
+				{
+					tmp = tmp + String.format(
+							'<div class="ethinfo_item"><span style="line-height:25px">%s</span><small><img src="<%=media%>/icons/%s" width="41" height="35" class="RJ45"/><br />%s<br />%s</small></div>', ports[i].name,
+							ports[i].status ? 'port_up.svg' : 'port_down.svg',
+							ports[i].speed = '-'? '1000M':ports[i].speed,
+							ports[i].duplex ? '<%:full-duplex%>' : '<%:half-duplex%>');
+				};
+				e.innerHTML =  tmp ;
+			}
+			
+
+			if (e = document.getElementById('localtime'))
+				e.innerHTML = info.localtime;
+
+			if (e = document.getElementById('uptime'))
+				e.innerHTML = String.format('%t', info.uptime);
+
+			if (e = document.getElementById('userinfo'))
+				e.innerHTML = info.userinfo;
+
+			if (e = document.getElementById('cpuinfo'))
+				e.innerHTML = info.cpuinfo;
+				
+			if (e = document.getElementById('cpuusage'))
+				e.innerHTML = info.cpuusage;
+
+			if (e = document.getElementById('loadavg')){
+				e.innerHTML = String.format(
+					'%.02f, %.02f, %.02f',
+					info.loadavg[0] / 65535.0,
+					info.loadavg[1] / 65535.0,
+					info.loadavg[2] / 65535.0
+				);
+			}
+				
+
+			if (e = document.getElementById('memtotal'))
+				e.innerHTML = String.format(
+					'%f, %f',
+					Math.floor(((info.memory.free + info.memory.buffered) / 1048576) + (info.memcached / 1024)),
+					Math.floor(info.memory.total / 1048576) 
+				);
+
+			if (e = document.getElementById('membuff'))
+			e.innerHTML = String.format(
+				'%f, %f',
+				Math.floor(info.memory.buffered / 1048576),
+				Math.floor(info.memory.total / 1048576) 
+				
+				);
+
+			if (e = document.getElementById('swaptotal'))
+				e.innerHTML = progressbar(
+					Math.floor(info.swap.free / 1048576) + " <%:MB%>",
+					Math.floor(info.swap.total / 1048576) + " <%:MB%>"
+				);
+
+			if (e = document.getElementById('swapfree'))
+				e.innerHTML = progressbar(
+					Math.floor(info.swap.free / 1048576) + " <%:MB%>",
+					Math.floor(info.swap.total / 1048576) + " <%:MB%>"
+				);
+
+			if (e = document.getElementById('conns'))
+				e.innerHTML = progressbar_conns(info.conncount, info.connmax);
+
+			if (e = document.getElementById('cpuusage'))
+				e.innerHTML = String.format('%d',parseInt(info.cpuusage));
+				
+
+			if("<%=REQUEST_URI%>" == "/cgi-bin/luci/admin/status/overview" || '<%=REQUEST_URI%>'=='/cgi-bin/luci/' || '<%=REQUEST_URI%>'=='/cgi-bin/luci/admin/status'){/*此行判断参考header相关处*/
+				if( e = document.getElementById('systime_txt_sec')){
+					var pattern = /\d{2}:\d{2}:\d{2}/, 
+						str = info.localtime;
+					e.innerHTML = pattern.exec(str); 
+				}
+
+				if (document.getElementsByClassName('cbi-map-descr').length !='0') {
+					e= document.getElementsByClassName('cbi-map-descr');
+					node_des = e[0].innerText;
+					document.getElementById('node_des').innerHTML = node_des;
+					e[0].style.display="none";
+				} else {
+					e = document.getElementById('node_des');
+					e.innerHTML = "<%:Kernel Version%>: <%=unameinfo.release or "unknown " %><br /><%:Firmware Version%>: <%=pcdata(ver.distname)%> <%=pcdata(ver.distversion)%> / <%=pcdata(ver.luciname)%> (<%=pcdata(ver.luciversion)%>)";
+				}
+			}
+
+			if(e = document.getElementById('systime_txt_year')){
+                var date=new Date();   
+                var year=date.getFullYear();
+                var calendar = year+'年';
+                e.innerHTML = calendar;
+            }
+
+			if(e = document.getElementById('systime_txt_day')){
+                var date=new Date();   
+                var mon=date.getMonth()+1;   
+                var da=date.getDate();
+                var calendar = mon+'月'+da+'日';
+                e.innerHTML = calendar;
+            }
+			
+		
+			var pattern = /\d{1,3}/g, 
+			str = String.format('%t', info.uptime),
+			matchedData =str.match(pattern),
+			matchedLength = matchedData.length,
+			days,
+			hours,
+			mins,
+			secs;
+			switch(matchedLength){
+				case 1:
+					days=0;
+					hours=0;
+					mins=0;
+					secs=matchedData[0];
+					break;
+				case 2:
+					days=0;
+					hours=0;
+					mins=matchedData[0];
+					secs=matchedData[1];
+					break;
+				case 3:
+					days=0;
+					hours=matchedData[0];
+					mins=matchedData[1];
+					secs=matchedData[2];
+					break;
+				case 4:
+					days=matchedData[0];
+					hours=matchedData[1];
+					mins=matchedData[2];
+					secs=matchedData[3];
+					break;
+			}
+
+			if(e=document.getElementById('sysuptime_day')){ 
+				e.innerHTML = days+'天';
+			}
+			
+			if(e=document.getElementById('sysuptime_min_sec')){
+				e.innerHTML = hours+'小时'+mins+'分'+secs+'秒';
+			}
+				
+			
+
+			if(e = document.querySelector('.conns_num')){
+				var pcdata = document.querySelector('.conns_bar').style.getPropertyValue('--p');
+				document.querySelector('.conns_num').style.setProperty('--p', pcdata);
+			}
+
+		}
+	);
+//]]></script>
+<div class="boxes_container">
+	<div class="box_status_small box_style">
+		<div class="box_title online_device"><%:Online Users%></div>
+		<div class="box_content mobile_fixed">
+			<span id="userinfo" class="online_num">0</span>
+			<span class="num_unit">台</span>
+		</div>
+	</div>
+	<div class="gutter"></div>
+	<% if has_dhcp then %>
+	<div class="box_stauts_medium box_style">
+		<div class="box_title dhcp_ipv4"><%:DHCP Leases%></div>
+		<div class="box_content_table_title">
+		<span>序号</span><span><%:Hostname%></span><span><%:IPv4-Address%></span><span><%:MAC-Address%></span><span><%:Leasetime remaining%></span>
+			</div>
+		<div class="box_content_table">
+			<table class="cbi-section-table" id="lease_status_table">
+				<tr class="cbi-section-table-titles">
+				</tr>
+				<tr class="cbi-section-table-row">
+					<td colspan="4"><em><br /><%:Collecting data...%></em></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<%end%>
+</div>
+<div class="gutter-h"></div>
+<div class="boxes_container">
+	<div class="box_status_small box_style">
+		<div class="box_title active_connection"><%:Active Connections%></div>
+		<div class="box_content">
+			<div id="conns" class="conns_num" style="--p:0%;"></div>
+		</div>
+	</div>
+	<% --[[if has_ipv6 then 
+	--]]%>
+	<div class="gutter"></div>
+	<div class="box_stauts_medium box_style">
+		<div class="box_title dhcp_ipv6"><%:DHCPv6 Leases%></div>
+		<div class="box_content_table_title">
+		<span>序号</span><span><%:Host%></span><span><%:IPv6-Address%></span><span><%:DUID%></span><span><%:Leasetime remaining%></span>
+			</div>
+		<div class="box_content_table">
+			<table class="cbi-section-table" id="lease6_status_table">
+				<tr class="cbi-section-table-titles">
+				</tr>
+				<tr class="cbi-section-table-row">
+					<td colspan="4"><em><br /><%:Collecting data...%></em></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<% --[[end--]]%>
+
+</div>
+
+<div class="gutter-h"></div>
+
+	<div class="boxes_container">
+		<div class="box_status_big box_style">
+			<div class="box_title cpu_avg">CPU负载</div>
+			<div class="box_content">
+				<div id="cpu_avg" class="cpu_average" style="width: 100%;height: 100%;"></div>
+				<div id="loadavg" class="hidden_data"></div>
+			</div>
+		</div>
+	</div>
+
+<div class="gutter-h"></div>
+
+<div class="boxes_container">
+	<div class="box_status_big box_style mobile_fixed">
+		<div class="box_content">
+			<div class="box_content_col_blk">
+				<div class="box_title">
+					<div class="cpu_usg"><%:CPU usage (%)%></div>
+				</div>
+				<div id="cpu_load" class="cpu_load" style="width: 100%;height: 208px;"></div>
+				<div class="blk_txt"><span><%=luci.sys.exec("cat /etc/bench.log") or " "%></span><span><%=pcdata(boardinfo.model or "?")%></span></div>
+				<div id="cpuusage" class="hidden_data"></div>
+			</div>
+			<div class="box_content_col_blk">
+				<div class="box_title">
+					<div class="mem_used"><%:Memory%></div>
+				</div>
+				<div id="mem_usg" class="mem_usg" style="width: 100%;height: 208px;"></div>
+				<div class="blk_txt"><span id="mem_usg_txt"></span><span id="total_mem_txt"></span></div>
+				<div id="memtotal" class="hidden_data"></div>
+			</div>
+			<div class="box_content_col_blk">
+				<div class="box_title">
+					<div class="mem_buff"><%:Swap%></div>
+				</div>
+				<div class="blk_txt"></div>
+				<div id="buffered_mem" class="buffered_mem" style="width: 100%;height: 208px;"></div>
+				<div class="blk_txt"><span id="buffered_mem_txt"></span><span id="total_buffered_mem_txt"></span></div>
+				<div id="membuff" class="hidden_data"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="gutter-h"></div>
+
+<div class="boxes_container">
+	<div class="box_status_big box_style">
+		<div class="box_title interface"><%:Interfaces%></div>
+		<div class="box_content">
+			<div id="ethinfo" class="ethinfo"></div>
+		</div>
+	</div>
+</div>
+
+<div class="gutter-h"></div>
+
+<div class="boxes_container">
+	<div class="box_status_big box_style mobile_fixed">
+		<div class="box_title network"><%:Network%></div>
+			<div class="box_content">
+
+					<div class="box_content_left_blk">
+						<div class="ipv4_wan_status">
+							<%:IPv4 WAN Status%>
+						</div>
+						<div id="wan4_i"></div>
+						<div id="wan4_s"><%:Collecting data...%></div>
+							
+					</div>
+					<% if has_ipv6 then %>
+					<div class="box_content_right_blk">
+						<div class="ipv6_wan_status">
+							<%:IPv6 WAN Status%>
+						</div>
+						<div id="wan6_i"></div>
+						<div id="wan6_s"><%:Collecting data...%></div>
+					</div>
+					<% end %>
+
+			</div>
+	</div>
+</div>
+<div class="gutter-h"></div>
+
+<% if swapinfo.total > 0 then %>
+<fieldset class="cbi-section">
+	<legend><%:Swap%></legend>
+
+	<table width="100%" cellspacing="10">
+		<tr><td width="33%"><%:Total Available%></td><td id="swaptotal">-</td></tr>
+		<tr><td width="33%"><%:Free%></td><td id="swapfree">-</td></tr>
+	</table>
+</fieldset>
+<% end %>
+
+
+
+<% if has_dsl then %>
+<fieldset class="cbi-section">
+       <legend><%:DSL%></legend>
+       <table width="100%" cellspacing="10">
+               <tr><td width="33%" style="vertical-align:top"><%:DSL Status%></td><td>
+                       <table><tr>
+                               <td id="dsl_i" style="width:16px; text-align:center; padding:3px"><img src="<%=resource%>/icons/ethernet_disabled.png" /><br /><small>?</small></td>
+                               <td id="dsl_s" style="vertical-align:middle; padding: 3px"><em><%:Collecting data...%></em></td>
+                       </tr></table>
+               </td></tr>
+       </table>
+</fieldset>
+<% end %>
+
+<% if has_wifi then %>
+<fieldset class="cbi-section">
+	<legend><%:Wireless%></legend>
+
+	<table id="wifi_status_table" width="100%" cellspacing="10">
+		<tr><td><em><%:Collecting data...%></em></td></tr>
+	</table>
+</fieldset>
+<% end %>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script>
+//<![CDATA[
+	window.addEventListener("load",function(){
+		var chartDom = document.getElementById('cpu_avg');
+		var cpu_avg_chart = echarts.init(chartDom);
+		var option;
+		var data=[];
+		var date = [];
+		
+		function updateData(shift){
+			var d = new Date();
+			var h = d.getHours();
+			var m = d.getMinutes()<10?'0'+d.getMinutes():d.getMinutes();
+			var s = d.getSeconds()<10?'0'+d.getSeconds():d.getSeconds();
+			var time = h+':'+m+':'+s;
+			var cpu_average_arr = document.getElementById('loadavg').innerText;
+			tmp = cpu_average_arr.split(',').map(Number);
+			tmp.unshift(time);
+			data.push(tmp);
+			json_data = JSON.stringify(data);
+			if(shift && data.length>15){
+				data.shift();
+			}
+		}
+
+		setInterval(function(){
+			updateData(true);
+			cpu_avg_chart.setOption({
+				dataset:{
+					source:data
+				}
+			});
+		},4000);
+
+		option = {
+			dataset:{
+				source:[['数据载入中...',0,0,0]]
+			},
+			tooltip: {
+				trigger: 'axis',
+				axisPointer: {
+					type: 'cross',
+					label: {
+						backgroundColor: '#6a7985'
+					}
+				}
+			},
+			legend: {
+				data: ['1分钟', '5分钟', '15分钟']
+			},
+			toolbox: {
+				feature: {
+					saveAsImage: {}
+				}
+			},
+			grid: {
+				left: '3%',
+				right: '4%',
+				bottom: '3%',
+				containLabel: true
+			},
+			xAxis: [
+				{
+					type: 'category',
+					boundaryGap: false
+					
+				}
+			],
+			yAxis: [
+				{
+					type: 'value'
+				}
+			],
+			series: [
+				{
+					name: '1分钟',
+					type: 'line',
+					stack: '总量',
+					smooth:true,
+					areaStyle: {},
+					emphasis: {
+						focus: 'series'
+					},
+					encode:{x:0,y:1}
+				},
+				{
+					name: '5分钟',
+					type: 'line',
+					stack: '总量',
+					smooth:true,
+					areaStyle: {},
+					emphasis: {
+						focus: 'series'
+					},
+					encode:{x:0,y:2}
+				},
+				{
+					name: '15分钟',
+					type: 'line',
+					stack: '总量',
+					smooth:true,
+					areaStyle: {},
+					emphasis: {
+						focus: 'series'
+					},
+					encode:{x:0,y:3}
+				}
+			]
+		};
+		option && cpu_avg_chart.setOption(option);
+
+
+		
+
+		var chartDom = document.getElementById('cpu_load');
+		var cpu_load_chart = echarts.init(chartDom, null, {renderer: 'svg'});
+
+		var chartDom = document.getElementById('mem_usg');
+		var mem_usg_chart = echarts.init(chartDom, null, {renderer: 'svg'});
+
+		var chartDom = document.getElementById('buffered_mem');
+		var buffered_mem_chart = echarts.init(chartDom, null, {renderer: 'svg'});
+
+		var option;
+		
+		var _panelImageURL = '<%=media%>/img/custom-gauge-panel-2.png';
+		var _animationDuration = 1000;
+		var _animationDurationUpdate = 1000;
+		var _animationEasingUpdate = 'quarticInOut';
+		var _valOnRadianMax = 100;
+		var _outerRadius = 70;
+		var _innerRadius = 55;
+		var _pointerInnerRadius = 40;
+		var _insidePanelRadius = 40;
+		var _currentDataIndex = 0;
+		
+		function renderItem(params, api) {
+			var valOnRadian = api.value(1);
+			var coords = api.coord([api.value(0), valOnRadian]);
+			var polarEndRadian = coords[3];
+			var imageStyle = {
+				image: _panelImageURL,
+				x: params.coordSys.cx - _outerRadius,
+				y: params.coordSys.cy - _outerRadius,
+				width: _outerRadius *2,
+				height: _outerRadius *2
+			};
+		
+			return {
+				type: 'group',
+				children: [{
+					type: 'image',
+					style: imageStyle,
+					clipPath: {
+						type: 'sector',
+						shape: {
+							cx: params.coordSys.cx,
+							cy: params.coordSys.cy,
+							r: _outerRadius,
+							r0: _innerRadius,
+							startAngle: 0,
+							endAngle: -polarEndRadian,
+							transition: 'endAngle',
+							enterFrom: { endAngle: 0 }
+						}
+					}
+				}, {
+					type: 'image',
+					style: imageStyle,
+					clipPath: {
+						type: 'polygon',
+						shape: {
+							points: makePionterPoints(params, polarEndRadian)
+						},
+						extra: {
+							polarEndRadian: polarEndRadian,
+							transition: 'polarEndRadian',
+							enterFrom: { polarEndRadian: 0 }
+						},
+						during: function (apiDuring) {
+							apiDuring.setShape(
+								'points',
+								makePionterPoints(params, apiDuring.getExtra('polarEndRadian'))
+							);
+						}
+					}
+				}, {
+					type: 'circle',
+					shape: {
+						cx: params.coordSys.cx,
+						cy: params.coordSys.cy,
+						r: _insidePanelRadius
+					},
+					style: {
+						fill: '#fff',
+						shadowBlur: 25,
+						shadowOffsetX: 0,
+						shadowOffsetY: 0,
+						shadowColor: 'rgb(230 230 230)'
+					}
+				}, {
+					type: 'text',
+					extra: {
+						valOnRadian: valOnRadian,
+						transition: 'valOnRadian',
+						enterFrom: { valOnRadian: 0 }
+					},
+					style: {
+						text: makeText(valOnRadian),
+						fontSize: 18,
+						fontWeight: 700,
+						x: params.coordSys.cx,
+						y: params.coordSys.cy,
+						fill: 'rgb(60 60 60)',
+						align: 'center',
+						verticalAlign: 'middle',
+						enterFrom: { opacity: 0 }
+					},
+					during: function (apiDuring) {
+						apiDuring.setStyle('text', makeText(apiDuring.getExtra('valOnRadian')));
+					}
+				}]
+			};
+		}
+		
+		function convertToPolarPoint(renderItemParams, radius, radian) {
+			return [
+				Math.cos(radian) * radius + renderItemParams.coordSys.cx,
+				-Math.sin(radian) * radius + renderItemParams.coordSys.cy
+			];
+		}
+		
+		function makePionterPoints(renderItemParams, polarEndRadian) {
+			return [
+				convertToPolarPoint(renderItemParams, _outerRadius, polarEndRadian),
+				convertToPolarPoint(renderItemParams, _outerRadius, polarEndRadian + Math.PI * 0.03),
+				convertToPolarPoint(renderItemParams, _pointerInnerRadius, polarEndRadian)
+			];
+		}
+		
+		function makeText(valOnRadian) {
+			if (valOnRadian < -10) {
+				alert('illegal during val: ' + valOnRadian);
+			}
+			return (valOnRadian / _valOnRadianMax * 100).toFixed(0) + '%';
+		}
+		
+		option = {
+			animationEasing: _animationEasingUpdate,
+			animationDuration: _animationDuration,
+			animationDurationUpdate: _animationDurationUpdate,
+			animationEasingUpdate: _animationEasingUpdate,
+			dataset: {
+				source: [[1, 1]]
+			},
+			tooltip: {},
+			angleAxis: {
+				type: 'value',
+				startAngle: 0,
+				axisLine: { show: false },
+				axisTick: { show: false },
+				axisLabel: { show: false },
+				splitLine: { show: false },
+				min: 0,
+				max: _valOnRadianMax
+			},
+			radiusAxis: {
+				type: 'value',
+				axisLine: { show: false },
+				axisTick: { show: false },
+				axisLabel: { show: false },
+				splitLine: { show: false }
+			},
+			polar: {},
+			series: [{
+				type: 'custom',
+				coordinateSystem: 'polar',
+				renderItem: renderItem
+			}]
+		};
+		
+		setInterval(function () {
+			var cpuusage_data = document.getElementById('cpuusage').innerText;
+			var data=[1];
+			data.push(cpuusage_data);
+			cpu_load_chart.setOption({
+				dataset: {
+					source: [data]
+				}
+			});
+		}, 1000);
+
+		setInterval(function () {
+			var mem_data = document.getElementById('memtotal').innerText;
+			var temp =  mem_data.split(',').map(Number);
+			var free_mem = temp[0];
+			var total_mem = temp[1];
+			var used_mem = total_mem-free_mem;
+			var pc = used_mem / total_mem * 100;
+			var data=[1];
+			var e;
+			data.push(pc);
+			if(e=document.getElementById('mem_usg_txt'))
+			e.innerText = used_mem;
+			if(e=document.getElementById('total_mem_txt'))
+			e.innerText = total_mem;
+			mem_usg_chart.setOption({
+				dataset: {
+					source: [data]
+				},
+				tooltip:{
+					show:true,
+					formatter:'共: '+total_mem+' MB, 已用: '+used_mem+' MB.'
+				}
+			});
+		}, 1000);
+
+		setInterval(function () {
+			var mem_data = document.getElementById('membuff').innerText;
+			var temp =  mem_data.split(',').map(Number);
+			var buffered_mem = temp[0];
+			var total_mem = temp[1];
+			var pc = buffered_mem / total_mem * 100;
+			var data=[1];
+			data.push(pc);
+			if(e=document.getElementById('buffered_mem_txt'))
+			e.innerText = buffered_mem;
+			if(e=document.getElementById('total_buffered_mem_txt'))
+			e.innerText = total_mem;
+			buffered_mem_chart.setOption({
+				dataset: {
+					source: [data]
+				},
+				tooltip:{
+					show:true,
+					formatter:'共: '+total_mem+' MB, 已缓存: '+buffered_mem+' MB.'
+				}
+			});
+		}, 1000);
+		
+		option && cpu_load_chart.setOption(option);
+		option && mem_usg_chart.setOption(option);
+		option && buffered_mem_chart.setOption(option);
+	});
+	//]]>
+</script>
+
+<%+footer%>

@@ -1,0 +1,138 @@
+@font-face {
+    font-family: 'Segoe UI';
+    src: url('font/Segoe/Segoe-UI.eot');
+    /* IE9 Compat Modes */
+    src: url('font/Segoe/Segoe-UI.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+    url('font/Segoe/Segoe-UI.woff2') format('woff2'), /* Super Modern Browsers */
+    url('font/Segoe/Segoe-UI.woff') format('woff'), /* Pretty Modern Browsers */
+    url('font/Segoe/Segoe-UI.ttf') format('truetype'), /* Safari, Android, iOS */
+    url('font/Segoe/Segoe-UI.svg#svgFontName') format('svg');
+    /* Legacy iOS */
+}
+
+body {
+    font-family: 'Segoe UI';
+}
+
+.container:before,
+.container:after {
+    display: unset;
+    content: "";
+    zoom: 1;
+}
+
+.container {
+    width: 50%;
+}
+
+.login_body {
+    padding: 0 !important;
+    background: rgb(63, 193, 201);
+    background: -o-linear-gradient(135deg, rgb(232 232 232 / 30%) 20%, rgb(202 202 202) 80%);
+    background: linear-gradient(135deg, rgb(232 232 232 / 30%) 20%, rgb(202 202 202) 80%);
+}
+
+.login_container {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login_panel {
+    width: 100%;
+    height: 60vh;
+    background-color: var(--primary-grey);
+    border-radius: 10px;
+    margin: 0 auto;
+    box-shadow: 10px 10px 15px 2px #2020208c;
+}
+
+.login_panel_content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: inherit;
+    height: inherit;
+}
+
+.login_panel_content .left_content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+    height: inherit;
+}
+
+.login_panel_content .right_content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+    height: inherit;
+    background-color: #F5F5F5;
+    border-radius: 0 10px 10px 0;
+}
+
+.left_content svg {
+    width: 50%;
+}
+
+.left_content .left_content_title {
+    font-size: 25px;
+    color: #F5F5F5;
+}
+
+.left_content .left_content_auth {
+    font-size: 50px;
+    color: var(--color_warn);
+    line-height: 50px;
+}
+
+.right_form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.right_psd_input {
+    width: 240px;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #364F6B;
+    background-color: rgba(54, 79, 107, 0.3);
+    margin-bottom: 25px;
+    background: url('../icons/lock.svg') no-repeat;
+    background-position: 10px 10px;
+    padding-left: 40px;
+}
+
+.sysauth_btn {
+    width: 240px !important;
+    height: 50px !important;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    flex-grow: 1;
+    color: #F5F5F5 !important;
+    font-size: 20px !important;
+}
+
+.login_btn {
+    background-color: var(--color_info);
+}
+
+.reset_btn {
+    background-color: var(--color_warn);
+}
+
+.login_errorbox {
+    position: relative;
+    padding: 7px 15px;
+    color: #fff;
+    background-color: var(--color_warn);
+    top: -20px;
+    border-radius: 4px;
+}
