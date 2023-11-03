@@ -123,7 +123,7 @@ jobs:
         git_branch_clone js https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         #git_clone https://github.com/maxlicheng/luci-app-unblockmusic.git
         
-        git_clone https://github.com/fw876/helloworld
+        git_branch_clone main https://github.com/fw876/helloworld
         git_clone https://github.com/xiaorouji/openwrt-passwall-packages
         svn export https://github.com/xiaorouji/openwrt-passwall/trunk/luci-app-passwall
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
