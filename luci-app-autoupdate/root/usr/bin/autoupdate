@@ -1,0 +1,312 @@
+#!/bin/sh
+# AutoUpdate for Openwrt
+
+Version=V8.1
+
+# 设置
+INPUT_OPTION=$1
+# 路径
+TMP_AUTOUPDATE_PATH=/tmp/autoupdate
+DOWNLOAD_PATH=${TMP_AUTOUPDATE_PATH}/download
+# 文件
+OPENWRT_AUTOUPDATE=/etc/openwrt_autoupdate
+AUTOUPDATE_LOG=${TMP_AUTOUPDATE_PATH}/autoupdate.log
+AUTOUPDATE_INFO=${TMP_AUTOUPDATE_PATH}/autoupdate.info
+AUTOUPDATE_CLOUD=${TMP_AUTOUPDATE_PATH}/autoupdate.cloud
+
+function ping_test() {
+	ping $1 -c 1 -W $2 > /dev/null 2>&1
+	[[ $? == 0 ]] && echo true || echo false
+}
+
+function network_check() {
+	[[ $(ping_test 223.5.5.5 2) == false ]] && {
+		echo "网络连接错误!"
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 网络连接错误!" >> ${AUTOUPDATE_LOG}
+		exit 1
+	} || {
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 网络连接正常." >> ${AUTOUPDATE_LOG}
+	}
+}
+
+function firmware_info() {
+	source ${OPENWRT_AUTOUPDATE}
+
+	[[ ! -d ${DOWNLOAD_PATH} ]] && mkdir -p ${DOWNLOAD_PATH} || rm -rf ${DOWNLOAD_PATH}/*
+
+	# 下载api文件
+	echo "开始获取API数据..."
+	wget -q --no-check-certificate ${GITHUB_API_URL_GHPROXY} -O ${DOWNLOAD_PATH}/${GITHUB_API}
+	if [[ ! -s ${DOWNLOAD_PATH}/${GITHUB_API} ]]; then
+		curl -fsSL ${GITHUB_API_URL_FASTGIT} -o ${DOWNLOAD_PATH}/${GITHUB_API}
+		if [[ $? -ne 0 ]]; then
+			curl -fsSL ${GITHUB_API_URL_ORIGIN} -o ${DOWNLOAD_PATH}/${GITHUB_API}
+		fi
+	fi
+	if [[ -s "${DOWNLOAD_PATH}/${GITHUB_API}" ]]; then
+		echo "获取API数据成功."
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 获取API数据成功." >> ${AUTOUPDATE_LOG}
+	else
+		echo "获取API数据失败,Github地址不正确,或此地址没云端存在，或您的仓库为私库!"
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 获取API数据失败,Github地址不正确,或此地址没云端存在,或您的仓库为私库" >> ${AUTOUPDATE_LOG}
+		echo "获取API数据失败,Github地址不正确,或此地址没云端存在,或您的仓库为私库!" > ${AUTOUPDATE_CLOUD}
+		exit 0
+	fi
+
+	# 固件格式、CPU信息
+	case "${TARGET_BOARD}" in
+	x86)
+		# 固件格式，如：uefi，或legacy
+		[ -d '/sys/firmware/efi' ] && {
+		BOOT_TYPE=uefi
+		} || {
+		BOOT_TYPE=legacy
+		}
+		# CPU信息，如：Intel(R) Celeron(R) J4125 @ 2.00GHz
+		CPU_INFO=$(cat /proc/cpuinfo |grep 'model name' |awk 'END {print}' |cut -f2 -d: |sed 's/^[ ]*//g'|sed 's/\ CPU//g')
+		[[ -z "${CPU_INFO}" ]] && CPU_INFO="${TARGET_PROFILE}"
+	;;
+	*)
+		# CPU信息，如：qemu-standard-pc-q35-ich9-2009
+		CPU_INFO=$(jsonfilter -e '@.model.id' < /etc/board.json | tr ',' '_')
+		# 固件格式，如：sysupgrade
+		BOOT_TYPE=sysupgrade
+	esac
+	
+	# Openwrt内核版本
+	local kernel_patchver=$(uname -rs | awk '{print $2;}')
+	
+	# 本地固件信息
+	# lede-18.06-x86-64-202310100000
+	LOCAL_FIRMWARE=${CURRENT_FIRMWARE}
+	# 202310100000
+	LOCAL_COMPILE_DATE=${COMPILE_DATE}
+	
+	
+	# 云端固件信息
+	local firmware_list_m="${DOWNLOAD_PATH}/firmware_list_m"
+	local firmware_list_s="${DOWNLOAD_PATH}/firmware_list_s"
+	# lede-18.06-x86-64-202310062251-uefi-bc5ccc.img.gz
+	FIRMWARE_LIST_M=$(grep -E "\"name\"" ${DOWNLOAD_PATH}/${GITHUB_API} | grep -i -Eo ".*${TARGET_PROFILE}.*${FIRMWARE_EXT}" | grep -i -E "${BOOT_TYPE}" | sed "s/ //g" | sed "s/\"//g" | awk -F ':' '{print $2;}' | sort -r)
+	FIRMWARE_LIST_S=$(echo "${FIRMWARE_LIST_M}" | grep -i -E "${SOURCE}" | grep -i -E "${LUCI_EDITION}")
+	echo "${FIRMWARE_LIST_M}" > ${firmware_list_m}
+	echo "${FIRMWARE_LIST_S}" > ${firmware_list_s}
+		
+	case ${INPUT_OPTION} in
+	-c|-u|-s)
+		CLOUD_FIRMWARE_FILENAME=$(cat ${firmware_list_s} | head -n 1 | tail -n 1)
+	;;
+	-m)
+		echo "云端固件:"
+		awk '{print "   " NR ".  " $0}' ${firmware_list_m}
+		local rows=$(cat ${firmware_list_m} | wc -l)
+		while :; do
+			read -p "请输入要选择的OpenWrt固件[默认1]：" num || echo
+			num=${num:-1}
+			local tmp_num=`echo ${num} | sed 's/[0-9]//g'`
+			if [[ ! -z ${tmp_num} ]]; then
+				echo "请输入数字,请重新输入!"
+			elif [[ ${num} -gt ${rows} ]]; then
+				echo "当前输入值超过可选范围,请重新输入!"
+			else
+				CLOUD_FIRMWARE_FILENAME=$(cat ${firmware_list_m} | head -n ${num} | tail -n 1)
+				echo "[已选] ${CLOUD_FIRMWARE_FILENAME}"
+				break
+			fi
+		done
+	;;
+	esac
+	
+	# 202310101000
+	CLOUD_COMPILE_DATE=$(echo "${CLOUD_FIRMWARE_FILENAME}" | sed "s/.*${TARGET_PROFILE}//g" | sed "s/${BOOT_TYPE}.*//g" | grep -Eo [0-9]+)
+	CLOUD_FIRMWARE=$(echo ${CLOUD_FIRMWARE_FILENAME} | sed "s/\(.*\)-${BOOT_TYPE}.*/\1/")
+	if [[ -n "${CLOUD_FIRMWARE_FILENAME}" ]] && [[ -n "${CLOUD_COMPILE_DATE}" ]] && [[ -n "${CLOUD_FIRMWARE}" ]]; then
+		echo "获取云端信息成功."
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 获取云端信息成功." >> ${AUTOUPDATE_LOG}
+	else
+		echo "获取云端信息失败,x86注意本地跟云端固件显示的引导模式是否一致,或者就是云端压根就没您同类型的固件存在,或者作者更了固件获取条件导致您本地跟云端信息不一致!"
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 获取云端信息失败,x86注意本地跟云端固件显示的引导模式是否一致,或者就是云端压根就没您同类型的固件存在,或者作者更了固件获取条件导致您本地跟云端信息不一致!" >> ${AUTOUPDATE_LOG}
+		echo "获取云端信息失败,x86注意本地跟云端固件显示的引导模式是否一致,或者就是云端压根就没您同类型的固件存在,或者作者更了固件获取条件导致您本地跟云端信息不一致!" > ${AUTOUPDATE_CLOUD}
+		exit 0
+	fi
+
+	# 
+	cat > ${AUTOUPDATE_INFO} <<-EOF
+	LOCAL_COMPILE_DATE=${LOCAL_COMPILE_DATE}
+	CLOUD_COMPILE_DATE=${CLOUD_COMPILE_DATE}
+	LOCAL_FIRMWARE=${LOCAL_FIRMWARE}
+	CLOUD_FIRMWARE=${CLOUD_FIRMWARE}
+	CPU_INFO=${CPU_INFO}
+	KERNEL_LUCI=${kernel_patchver}-${LUCI_EDITION}
+	FIRMWARE_TYPE=${BOOT_TYPE}${FIRMWARE_EXT}
+	EOF
+	
+	echo "信息检测完毕."
+	echo "$(date +'%Y-%m-%d %H:%M:%S') 信息检测完毕." >> ${AUTOUPDATE_LOG}
+}
+
+function firmware_check() {
+	network_check
+	firmware_info
+	if [[ "${LOCAL_COMPILE_DATE}" -eq "${CLOUD_COMPILE_DATE}" ]]; then
+		local checked_type="已是最新"
+	elif [[ "${LOCAL_COMPILE_DATE}" -lt "${CLOUD_COMPILE_DATE}" ]]; then
+		local checked_type="有可更新固件"
+	elif [[ "${LOCAL_COMPILE_DATE}" -gt "${CLOUD_COMPILE_DATE}" ]]; then
+		local checked_type="云端最高版本固件,低于您现在所使用版本,请到云端查看原因"
+	fi
+	echo "${CLOUD_FIRMWARE} [${checked_type}]"
+	echo "${CLOUD_FIRMWARE} [${checked_type}]" > ${AUTOUPDATE_CLOUD}
+	
+	exit 0
+}
+
+function firmware_upgrade() {
+	network_check
+	firmware_info
+	# tmp文件夹可用空间（单位:MB）
+	local tmp_available=$(df -m | grep -i "/tmp" | awk '{print $4}' | awk 'NR==1' | awk -F. '{print $1}')
+	let X=$(grep -i -n "${CLOUD_FIRMWARE_FILENAME}" ${DOWNLOAD_PATH}/${GITHUB_API} | tail -1 | cut -d : -f 1)-4
+	let cloud_firmware_size=$(sed -n "${X}p" ${DOWNLOAD_PATH}/${GITHUB_API} | grep -Eo "[0-9]+" | awk '{print ($1)/1048576}' | awk -F. '{print $1}')+1
+	if [[ "${tmp_available}" -lt "${cloud_firmware_size}" ]]; then
+		echo "固件/tmp空间值[${tmp_available}M],云端固件体积[${cloud_firmware_size}M],空间不足,不能下载"
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 固件/tmp空间值[${tmp_available}M],云端固件体积[${cloud_firmware_size}M],空间不足,不能下载" >> ${AUTOUPDATE_LOG}
+		exit 0
+	else
+		echo "固件/tmp空间值[${tmp_available}M],云端固件体积[${cloud_firmware_size}M]"
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 固件/tmp空间值[${tmp_available}M],云端固件体积[${cloud_firmware_size}M]" >> ${AUTOUPDATE_LOG}
+	fi
+
+	if [[ "${LOCAL_COMPILE_DATE}" -lt "${CLOUD_COMPILE_DATE}" ]]; then
+		echo "检测到有可更新的固件版本,立即更新固件!"
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 检测到有可更新的固件版本,立即更新固件!" >> ${AUTOUPDATE_LOG}
+	elif [[ "${LOCAL_COMPILE_DATE}" -eq "${CLOUD_COMPILE_DATE}" ]]; then
+		echo "已是最新版本,无需更新固件!"
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 已是最新版本,无需更新固件!" >> ${AUTOUPDATE_LOG}
+		exit 0
+	elif [[ "${LOCAL_COMPILE_DATE}" -gt "${CLOUD_COMPILE_DATE}" ]]; then
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 云端最高版本固件,低于您现在所安装的版本,请到云端查看原因!" >> ${AUTOUPDATE_LOG}
+		echo "云端最高版本固件,低于您现在所安装的版本!"
+		read -t 60 -p "确定要更新到此固件吗[f/F强制升级,其它退出升级]：" force_update || echo
+		case ${force_update} in
+		f|F)
+			echo
+		;;
+		*)
+			exit 0
+		;;
+		esac		
+	fi
+	
+	echo "开始下载云端固件,请等待..."
+	cd ${DOWNLOAD_PATH}
+	if [[ "$(curl -I -s --connect-timeout 5 google.com -w %{http_code} | tail -n1)" == "301" ]]; then
+		DOWNLOAD1=${FRIMWARE_URL_ORIGIN}
+		DOWNLOAD2=${FRIMWARE_URL_GHPROXY}
+	else
+		DOWNLOAD1=${FRIMWARE_URL_GHPROXY}
+		DOWNLOAD2=${FRIMWARE_URL_ORIGIN}
+	fi
+
+	wget -q --timeout=5 --tries=2 --show-progress ${DOWNLOAD1}/${CLOUD_FIRMWARE_FILENAME} -O ${DOWNLOAD_PATH}/${CLOUD_FIRMWARE_FILENAME}
+	if [[ $? -ne 0 ]]; then
+		curl -fsSL ${DOWNLOAD2}/${CLOUD_FIRMWARE_FILENAME} -o ${CLOUD_FIRMWARE_FILENAME}
+	fi
+	if [[ $? -ne 0 ]]; then
+		echo "下载云端固件失败,请检查网络再尝试或手动安装固件!"
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 下载云端固件失败,请检查网络再尝试或手动安装固件!" >> ${AUTOUPDATE_LOG}
+		exit 0
+	else
+		echo "下载云端固件成功."
+		echo "$(date +'%Y-%m-%d %H:%M:%S') 下载云端固件成功." >> ${AUTOUPDATE_LOG}
+	fi
+	
+	local local_md5256=$(md5sum ${CLOUD_FIRMWARE_FILENAME} |cut -c1-3)$(sha256sum ${CLOUD_FIRMWARE_FILENAME} |cut -c1-3)
+	local cloud_md5256=$(echo ${CLOUD_FIRMWARE_FILENAME} |grep -Eo "[a-zA-Z0-9]+${FIRMWARE_EXT}" | sed -r "s/(.*)${FIRMWARE_EXT}/\1/")
+	if [[ "${cloud_md5256}" == "${local_md5256}" ]]; then
+		echo "MD5对比成功."
+		echo "$(date +'%Y-%m-%d %H:%M:%S') MD5对比成功." >> ${AUTOUPDATE_LOG}
+		sleep 2
+	else
+		echo "MD5对比失败,固件可能在下载时损坏,请检查网络后重试!"
+		echo "$(date +'%Y-%m-%d %H:%M:%S') MD5对比失败,固件可能在下载时损坏,请检查网络后重试!" >> ${AUTOUPDATE_LOG}
+		exit 0
+	fi
+
+	echo "正在执行更新,更新期间请不要断开电源或重启设备 ..."
+	echo "$(date +'%Y-%m-%d %H:%M:%S') 正在执行更新,更新期间请不要断开电源或重启设备 ..." >> ${AUTOUPDATE_LOG}
+	chmod 777 "${CLOUD_FIRMWARE_FILENAME}"
+	if [[ `opkg list | awk '{print $1}' | grep -c gzip` -ge '1' ]]; then
+		opkg remove gzip > /dev/null 2>&1
+	fi
+
+	# 删除不需要的文件
+	if [[ -f ${FILES_TO_DELETE} ]]; then
+		chmod 775 ${FILES_TO_DELETE}
+		source ${FILES_TO_DELETE}
+	fi
+
+	echo "升级固件中,请勿断开路由器电源...END"
+	echo "$(date +'%Y-%m-%d %H:%M:%S') 升级固件中，请勿断开路由器电源...END" >> ${AUTOUPDATE_LOG}
+	sleep 3
+	
+	rm -rf /etc/config/luci
+	rm -rf /mnt/*upback.tar.gz && sysupgrade -b /mnt/upback.tar.gz
+	if [[ `ls -1 /mnt | grep -c "upback.tar.gz"` -eq '1' ]]; then
+		local upgrade_options='sysupgrade -F -f /mnt/upback.tar.gz'
+	else
+		local upgrade_options='sysupgrade -F -q'
+	fi
+	${upgrade_options} ${CLOUD_FIRMWARE_FILENAME}
+}
+
+function script_help() {
+    echo "  使用:  autoupdate [选项]
+  Usage: autoupdate [OPTION]
+    
+    -c  检测云端是否存在可供更新固件
+        Check whether the cloud has available OpenWrt firmware that can be upgraded.
+        
+    -u  仅检测云端相同源码、LUCI版本的OpenWrt固件是否有可更新，如有则更新
+        List the firmware of the same LUCI version as OpenWrt, and then compare whether it can be upgraded, if it can be upgraded, upgrade it.
+        
+    -s  仅检测云端相同源码、LUCI版本的OpenWrt固件是否有可更新，如有则更新
+        List the firmware of the same LUCI version as OpenWrt, and then compare whether it can be upgraded, if it can be upgraded, upgrade it.
+        
+    -m  检测云端所有OpenWrt固件是否有可更新，如有则更新
+        List all the firmwares in the cloud to choose from, and then upgrade the OpenWrt system.
+        
+    -v  版本
+        Version.
+        
+    -h  帮助
+        help.
+    "
+}
+
+function main() {
+	[[ ! -d ${TMP_AUTOUPDATE_PATH} ]] && mkdir -p ${TMP_AUTOUPDATE_PATH}
+	echo "$(date +'%Y-%m-%d %H:%M:%S') 开始运行在线更新程序" >> ${AUTOUPDATE_LOG}
+
+	if [[ -z "${INPUT_OPTION}" ]]; then
+		script_help
+	else
+		case ${INPUT_OPTION} in
+		-c)
+			firmware_check
+		;;
+		-h|--help)
+			script_help
+		;;
+		-u|-s|-m)
+			firmware_upgrade
+		;;
+		-v|--version)
+			echo "${Version}"
+		;;
+		esac
+	fi
+}
+
+
+main "$*"

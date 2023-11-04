@@ -1,32 +1,35 @@
-#!/bin/bash /etc/rc.common
+#!/bin/sh /etc/rc.common
 START=99
 
 run_autoupdate()
 {
-	local enable
-	config_get_bool enable $1 enable
-	if [ $enable == "1" ]; then
-		local minute
-		local hour
-		config_get week $1 week
-		config_get minute $1 minute
-		config_get hour $1 hour
-		[ "$week" == 7 ] && week="*"
-		sed -i '/AutoUpdate/d' /etc/crontabs/root >/dev/null 2>&1
-		echo "$minute $hour * * $week bash /bin/AutoUpdate.sh -u" >> /etc/crontabs/root
-	else
-		sed -i '/AutoUpdate/d' /etc/crontabs/root >/dev/null 2>&1	
+	if [[ -f "/usr/bin/autoupdate" ]] && [[ -f "/etc/openwrt_autoupdate" ]]; then
+		local enable
+		config_get_bool enable $1 enable
+		if [ $enable == "1" ]; then
+			local minute
+			local hour
+			config_get week $1 week
+			config_get minute $1 minute
+			config_get hour $1 hour
+			[ "$week" == 7 ] && week="*"
+			sed -i '/autoupdate/d' /etc/crontabs/root >/dev/null 2>&1
+			echo "$minute $hour * * $week autoupdate -u" >> /etc/crontabs/root
+			/etc/init.d/cron restart
+		else
+			stop	
+		fi
+		cus_url="$(uci get autoupdate.@login[0].github)"
+		if [[ "$(echo "${cus_url}" |head -n 5 |cut -d '/' -f 1-3)" == 'https://github.com' ]]; then
+            custom_github_repository="$(echo "${cus_url}" |head -n 5 |cut -d '/' -f 4-5)"
+			current_github_repository="$(grep GITHUB_REPOSITORY_URL= /etc/openwrt_autoupdate |head -n 5 |cut -d '/' -f 4-5)"
+		fi
+		if [[ `echo "${custom_github_repository}" |grep -c '/'` -eq '1' ]] && [[ "${custom_github_repository}" != "${current_github_repository}" ]]; then
+			sed -i "s?${current_github_repository}?${custom_github_repository}?g" /etc/openwrt_autoupdate
+			uci set autoupdate.@login[0].github=${cus_url}
+ 			uci commit autoupdate
+		fi
 	fi
-	if [ -f /bin/AutoUpdate.sh ] && [ -f /bin/openwrt_info ];then
-		custom_github_url="$(uci get autoupdate.@login[0].github)"
-		current_github_url="$(grep Github= /bin/openwrt_info | cut -c8-100)"
-		[[ -n "${custom_github_url}" ]] && {
-			[[ "${custom_github_url}" != "${current_github_url}" ]] && {
-				sed -i "s?${current_github_url}?${custom_github_url}?g" /bin/openwrt_info
-			}
-		}
-	fi
-	/etc/init.d/cron restart
 }
 
 
@@ -38,7 +41,8 @@ start()
 
 stop()
 {
-	sed -i '/AutoUpdate/d' /etc/crontabs/root >/dev/null 2>&1
+	sed -i '/autoupdte/d' /etc/crontabs/root >/dev/null 2>&1
+	/etc/init.d/cron restart
 }
 
 restart()
