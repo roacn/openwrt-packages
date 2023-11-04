@@ -145,12 +145,11 @@ jobs:
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
         git_branch_clone main https://github.com/fw876/helloworld && mvdir helloworld
         
-        svn export https://github.com/linkease/nas-packages-luci/trunk/luci ./linkease/nas/luci
-        svn export https://github.com/linkease/nas-packages/trunk/network/services ./linkease/nas/network/services
-        svn export https://github.com/linkease/nas-packages/trunk/multimedia/ffmpeg-remux ./linkease/nas/multimedia/ffmpeg-remux
-        svn export https://github.com/linkease/istore/trunk/luci ./linkease/iStore/luci
-        svn export https://github.com/linkease/istore/trunk/translations ./linkease/iStore/translations
-        svn export https://github.com/linkease/istore-ui/trunk/app-store-ui ./linkease/iStore/app-store-ui
+        svn export https://github.com/linkease/nas-packages-luci/trunk/luci ./linkease/nas/luci && mv -n ./linkease/nas/luci/* ./linkease && rm -rf ./linkease/nas
+        svn export https://github.com/linkease/nas-packages/trunk/network/services ./linkease/nas/network/services && mv -n ./linkease/nas/network/services/* ./linkease && rm -rf ./linkease/nas
+        svn export https://github.com/linkease/nas-packages/trunk/multimedia/ffmpeg-remux ./linkease/nas/multimedia/ffmpeg-remux && mv -n ./linkease/nas/multimedia/* ./linkease && rm -rf ./linkease/nas
+        svn export https://github.com/linkease/istore/trunk/luci ./linkease/iStore/luci && mv -n ./linkease/iStore/luci/* ./linkease && rm -rf ./linkease/iStore
+        svn export https://github.com/linkease/istore/trunk/translations ./linkease/translations
         
         git_clone https://github.com/openwrt-develop/luci-theme-atmaterial
         git_clone https://github.com/sirpdboy/luci-theme-btmod
