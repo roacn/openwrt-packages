@@ -112,6 +112,7 @@ jobs:
         git_clone https://github.com/sirpdboy/luci-app-advanced
         git_clone https://github.com/honwen/luci-app-aliddns
         svn export https://github.com/messense/aliyundrive-webdav/trunk/openwrt && mvdir openwrt
+        git_clone https://github.com/roacn/luci-app-autoupdate
         git_clone https://github.com/sirpdboy/luci-app-autotimeset
         git_clone https://github.com/NateLol/luci-app-beardropper
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
