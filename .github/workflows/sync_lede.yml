@@ -135,6 +135,7 @@ jobs:
         git_clone https://github.com/pymumu/openwrt-smartdns smartdns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
         svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
+        git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         svn export https://github.com/coolsnowwolf/gargoyle/trunk/package/addon/lean/vsftpd-alt
         git_branch_clone openwrt-18.06 https://github.com/tty228/luci-app-wechatpush
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
@@ -144,7 +145,13 @@ jobs:
         svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
         git_branch_clone main https://github.com/fw876/helloworld && mvdir helloworld
         
-        git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
+        svn export https://github.com/linkease/nas-packages-luci/trunk/luci ./linkease/nas/luci
+        svn export https://github.com/linkease/nas-packages/trunk/network/services ./linkease/nas/network/services
+        svn export https://github.com/linkease/nas-packages/trunk/multimedia/ffmpeg-remux ./linkease/nas/multimedia/ffmpeg-remux
+        svn export https://github.com/linkease/istore/trunk/luci ./linkease/iStore/luci
+        svn export https://github.com/linkease/istore/trunk/translations ./linkease/iStore/translations
+        svn export https://github.com/linkease/istore-ui/trunk/app-store-ui ./linkease/iStore/app-store-ui
+        
         git_clone https://github.com/openwrt-develop/luci-theme-atmaterial
         git_clone https://github.com/sirpdboy/luci-theme-btmod
         git_clone https://github.com/netitgo/luci-theme-jj
