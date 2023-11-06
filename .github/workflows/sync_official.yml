@@ -18,7 +18,7 @@ on:
       ssh:
         description: '开启SSH远程配置'
         required: false
-        default: 'false'
+        default: false
         type: boolean
   watch:
     types: started
@@ -117,7 +117,8 @@ jobs:
         git_clone https://github.com/NateLol/luci-app-beardropper
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
         svn export https://github.com/immortalwrt-collections/openwrt-cdnspeedtest/trunk/cdnspeedtest
-        git_clone https://github.com/sbwml/luci-app-mosdns.git mos
+        git_clone https://github.com/sirpdboy/luci-app-eqosplus
+        git_clone https://github.com/sbwml/luci-app-mosdns mos
         git_clone https://github.com/sirpdboy/luci-app-netdata
         svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest
         svn export https://github.com/sirpdboy/netspeedtest/trunk/homebox
