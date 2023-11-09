@@ -35,6 +35,7 @@
 | luci-app-passwall2                                           | passwall                                                     |
 | luci-app-poweroff                                            | 关机                                                         |
 | [luci-app-pushbot](https://github.com/zzsj0928/luci-app-pushbot) | 全能推送<br />支持：钉钉推送,企业微信推送,PushPlus推送,微信推送,企业微信应用推送,飞书推送,钉钉机器人推送,企业微信机器人推送,飞书机器人 |
+| [luci-app-qbittorrent](https://github.com/sbwml/luci-app-qbittorrent)                   | qbittorrent                                                 |
 | luci-app-rebootschedule                                      | 定时任务                                                     |
 | [luci-app-shortcutmenu](https://github.com/doushang/luci-app-shortcutmenu/) | 快捷菜单                                                     |
 | [luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns) | SmartDNS，DNS解析                                            |
