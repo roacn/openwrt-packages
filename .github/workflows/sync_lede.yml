@@ -131,7 +131,7 @@ jobs:
         git_clone https://github.com/esirplayground/luci-app-poweroff
         git_clone https://github.com/sirpdboy/luci-app-poweroffdevice
         git_clone https://github.com/zzsj0928/luci-app-pushbot
-        git_clone https://github.com/sbwml/luci-app-qbittorrent sbwml_qbittorrent && mvdir sbwml_qbittorrent
+        #git_clone https://github.com/sbwml/luci-app-qbittorrent sbwml_qbittorrent && mvdir sbwml_qbittorrent
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
         svn export https://github.com/doushang/luci-app-shortcutmenu/trunk/luci-app-shortcutmenu
         git_branch_clone lede https://github.com/pymumu/luci-app-smartdns
