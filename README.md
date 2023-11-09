@@ -38,6 +38,7 @@
 | [luci-app-shortcutmenu](https://github.com/doushang/luci-app-shortcutmenu/) | 快捷菜单                                                     |
 | [luci-app-smartdns](https://github.com/pymumu/luci-app-smartdns) | SmartDNS，DNS解析                                            |
 | luci-app-ssr-plus                                            | SSR Plus                                                     |
+| [luci-app-qbittorrent](https://github.com/sbwml/luci-app-qbittorrent)                   | qbittorrent                                                 |
 | luci-app-tencentcloud-cos                                    | 腾讯云                                                       |
 | luci-app-tencentddns                                         | 腾讯DDNS                                                     |
 | luci-app-unblockmusic                                        | 解除网易云音乐播放限制                                       |
