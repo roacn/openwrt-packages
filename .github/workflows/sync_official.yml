@@ -141,6 +141,7 @@ jobs:
         git_branch_clone js https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         #git_clone https://github.com/maxlicheng/luci-app-unblockmusic.git
         svn export https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
+        git_clone https://github.com/sbwml/luci-app-xunlei
         svn export https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
         
         git_clone https://github.com/xiaorouji/openwrt-passwall-packages && mvdir_force openwrt-passwall-packages
