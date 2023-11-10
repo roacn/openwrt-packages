@@ -6,7 +6,7 @@ name: Merge-Upstream-Official
 on:
   push:
     branches:
-      - Lede
+      - Official
     paths:
       - '.github/workflows/sync_official.yml'
       - '.gitignore'
@@ -39,6 +39,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         ref: Official
+        fetch-depth: 0
 
     - name: Set git identity
       run : |
@@ -163,7 +164,7 @@ jobs:
       run: |
         shopt -s extglob
         mv -n cloudflarespeedtest/applications/luci-app-cloudflarespeedtest luci-app-cloudflarespeedtest ; rm -rf cloudflarespeedtest
-        mv -n mos/luci-app-mosdns luci-app-mosdns && mv -n mos/mosdns mosdns && mv -n mos/v2dat v2dat ; rm -rf mos
+        mv -f mos/luci-app-mosdns luci-app-mosdns && mv -f mos/mosdns mosdns && mv -f mos/v2dat v2dat ; rm -rf mos
         cp -rf .github/diy/packages/* ./ || true
         rm -rf */.git
         
