@@ -1,0 +1,41 @@
+msgid "Xunlei"
+msgstr "迅雷下载"
+
+msgid "NAS Xunlei DSM 7.x Beta Version"
+msgstr "NAS 迅雷下载 DSM 7.x 内测版"
+
+msgid "Invitation code:"
+msgstr "邀请码："
+
+msgid "Enabled"
+msgstr "启用"
+
+msgid "RUNNING"
+msgstr "运行中"
+
+msgid "NOT RUNNING"
+msgstr "未运行"
+
+msgid "Collecting data..."
+msgstr "收集数据..."
+
+msgid "Open Web Interface"
+msgstr "打开 Web 界面"
+
+msgid "Port"
+msgstr "端口"
+
+msgid "Username"
+msgstr "用户名"
+
+msgid "Password"
+msgstr "密码"
+
+msgid "Leave blank to disable auth"
+msgstr "留空则禁用身份验证"
+
+msgid "Data Storage Path"
+msgstr "数据储存路径"
+
+msgid "Default Download Path"
+msgstr "默认下载路径"
