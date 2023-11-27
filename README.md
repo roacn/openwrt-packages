@@ -1,7 +1,3 @@
-### OpenWrt — 常用插件
-
-#### luci 18.06 19.07 通用
-
 [![openwrt](https://img.shields.io/badge/source-openwrt-magenta.svg?style=flat&logo=appveyor)](https://github.com/openwrt/openwrt) 
 [![Lean](https://img.shields.io/badge/source-Lean-red.svg?style=flat&logo=appveyor)](https://github.com/coolsnowwolf/lede) 
 [![passwall](https://img.shields.io/badge/passwall-xiaorouji-orange.svg?style=flat&logo=appveyor)](https://github.com/xiaorouji/openwrt-passwall) 
@@ -10,6 +6,10 @@
 [![apps](https://img.shields.io/badge/compile-roa-deeppink.svg?style=flat&logo=appveyor)](https://github.com/roacn/compile-packages)
 ![code-size](https://img.shields.io/github/languages/code-size/roacn/openwrt-packages?color=blueviolet)
 
+### OpenWrt插件
+
+- `Lede`分支，lede源码插件，18.06 19.07 通用
+- `Official`分支，官方源码新版luci对应插件
 
 | 插件                                                         | 说明                                                         |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
