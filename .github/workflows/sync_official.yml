@@ -112,6 +112,7 @@ jobs:
         
         git_clone https://github.com/sirpdboy/luci-app-advanced
         git_clone https://github.com/honwen/luci-app-aliddns
+        git_clone https://github.com/sbwml/luci-app-alist sbwmlalist
         svn export https://github.com/messense/aliyundrive-webdav/trunk/openwrt && mvdir openwrt
         git_clone https://github.com/roacn/luci-app-autoupdate
         git_clone https://github.com/sirpdboy/luci-app-autotimeset
@@ -167,6 +168,7 @@ jobs:
         shopt -s extglob
         mv -n cloudflarespeedtest/applications/luci-app-cloudflarespeedtest luci-app-cloudflarespeedtest ; rm -rf cloudflarespeedtest
         rm -rf mosdns && mv -f mos/luci-app-mosdns luci-app-mosdns && mv -f mos/mosdns mosdns && mv -f mos/v2dat v2dat ; rm -rf mos
+        rm -rf sbwmlalist && mv -f sbwmlalist/luci-app-alist luci-app-alist && mv -f sbwmlalist/alist alist ; rm -rf sbwmlalist
         cp -rf .github/diy/packages/* ./ || true
         rm -rf */.git
         
