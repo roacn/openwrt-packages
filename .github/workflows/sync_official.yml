@@ -167,8 +167,8 @@ jobs:
       run: |
         shopt -s extglob
         mv -n cloudflarespeedtest/applications/luci-app-cloudflarespeedtest luci-app-cloudflarespeedtest ; rm -rf cloudflarespeedtest
+        mv -f sbwmlalist/luci-app-alist luci-app-alist && mv -f sbwmlalist/alist alist ; rm -rf sbwmlalist
         rm -rf mosdns && mv -f mos/luci-app-mosdns luci-app-mosdns && mv -f mos/mosdns mosdns && mv -f mos/v2dat v2dat ; rm -rf mos
-        rm -rf sbwmlalist && mv -f sbwmlalist/luci-app-alist luci-app-alist && mv -f sbwmlalist/alist alist ; rm -rf sbwmlalist
         cp -rf .github/diy/packages/* ./ || true
         rm -rf */.git
         
