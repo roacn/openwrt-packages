@@ -194,8 +194,8 @@ jobs:
       continue-on-error: true
       run: |
         Emoji=("🎉" "🤞" "✨" "🎁" "🎈" "🎄" "🎨" "💋" "🍓" "🍕" "🍉" "💐" "🌴" "🚀" "🛸" "🗽" "⛅" "🌈" "🔥" "⛄" "🐶" "🏅" "🦄" "🐤")
-        if [[ -n $(git status | grep "nothing to commit") ]]; then
-          git add .
+        git add .
+        if [[ -n $(git status | grep -o "Changes to be committed") ]]; then
           git commit -m "${Emoji[$[$RANDOM % ${#Emoji[@]}]]} Sync $(date +%Y-%m-%d" "%H:%M)"
           git push -f origin ${{ env.BRANCH }}
         fi
