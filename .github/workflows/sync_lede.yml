@@ -23,7 +23,9 @@ on:
   watch:
     types: started
   repository_dispatch:
-
+env:
+  BRANCH: Lede
+  
 jobs:
   merge:
     if: github.event.repository.owner.id == github.event.sender.id || ! github.event.sender.id
@@ -38,6 +40,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
+        ref: ${{ env.BRANCH }}
         fetch-depth: 0
 
     - name: Set git identity
@@ -196,7 +199,7 @@ jobs:
         if [[ -z $(git status | grep "nothing to commit") ]]; then
           git add .
           git commit -m "${Emoji[$[$RANDOM % ${#Emoji[@]}]]} Sync $(date +%Y-%m-%d" "%H:%M)"
-          git push -f origin Lede
+          git push -f origin ${{ env.BRANCH }}
         fi
         
     - name: Delete workflow runs
