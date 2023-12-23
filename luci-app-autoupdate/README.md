@@ -1,1 +1,1 @@
-匹配[build-actions](https://github.com/roacn/build-actions)固件使用！
+匹配[openwrt](https://github.com/roacn/openwrt)固件使用！
