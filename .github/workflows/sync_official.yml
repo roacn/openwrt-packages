@@ -215,7 +215,7 @@ jobs:
         shopt -s extglob
         mv -f sbwmlalist/luci-app-alist luci-app-alist && mv -f sbwmlalist/alist alist ; rm -rf sbwmlalist
         cp -rf .github/diy/packages/* ./ || true
-        rm -rf */.git
+        rm -rf */.git*
         rm -rf tmp
         
     - name: Apply patches
