@@ -198,9 +198,9 @@ jobs:
         git_clone https://github.com/xiaorouji/openwrt-passwall2 tmp &&mvluci tmp
         git_branch_clone main https://github.com/fw876/helloworld && mvdir helloworld
         
-        git_clone https://github.com/linkease/nas-packages-luci linkease
-        git_clone https://github.com/linkease/nas-packages tmp && mvdir_force tmp linkease
-        git_clone https://github.com/linkease/istore tmp && mvdir_force tmp linkease
+        git_clone https://github.com/linkease/nas-packages-luci tmp && mvdir_force tmp linkease/nas
+        git_clone https://github.com/linkease/nas-packages tmp && mvdir_force tmp linkease/nas
+        git_clone https://github.com/linkease/istore tmp && mvdir_force tmp linkease/istore
         
         git_partial_clone main https://github.com/messense/aliyundrive-webdav luci-app-aliyundrive-webdav openwrt/luci-app-aliyundrive-webdav openwrt/aliyundrive-webdav
         git_partial_clone v5 https://github.com/sbwml/luci-app-mosdns luci-app-mosdns luci-app-mosdns mosdns v2dat
