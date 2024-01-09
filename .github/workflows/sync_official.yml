@@ -167,7 +167,7 @@ jobs:
         git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest tmp && mvdir tmp/applications
         git_clone https://github.com/immortalwrt-collections/openwrt-cdnspeedtest  && mvdir openwrt-cdnspeedtest
         git_clone https://github.com/sirpdboy/luci-app-eqosplus
-        git_clone https://github.com/sbwml/luci-app-mosdns mos
+        git_clone https://github.com/sbwml/luci-app-mosdns
         git_clone https://github.com/sirpdboy/luci-app-netdata
         git_clone https://github.com/sirpdboy/netspeedtest tmp && mvdir tmp
         git_clone https://github.com/rufengsuixing/luci-app-onliner
