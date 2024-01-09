@@ -58,6 +58,9 @@ jobs:
         rm -rf `find ./* -maxdepth 0 -type d ! -name ".github/diy"` >/dev/null 2>&1
         
         function git_clone() {
+          if [ -n "$2" ]; then
+            rm -rf $2 
+          fi
           git clone --depth 1 $1 $2
           if [ "$?" != 0 ]; then
             echo "error on $1"
@@ -67,6 +70,9 @@ jobs:
         }
         
         function git_branch_clone() {
+          if [ -n "$3" ]; then
+            rm -rf $3 
+          fi
           git clone --depth 1 -b $1 $2 $3
           if [ "$?" != 0 ]; then
             echo "error on $2"
@@ -103,6 +109,30 @@ jobs:
           rm -rf $localdir
         }
         
+        function git_partial_clone() {
+          if [ "$#" -lt 4 ]; then
+            echo "Usage: git_partial_clone <repo_branch> <repo_url> <local_save_dir> <repo_folders_path>"
+            return 1
+          fi
+          local repo_branch="$1"
+          local repo_url="$2"
+          local local_save_dir="$3"
+        
+          mkdir ~/$local_save_dir
+          cd ~/$local_save_dir
+          git init --initial-branch=$repo_branch
+          git remote add -f origin $repo_url > /dev/null 2>&1
+          git config core.sparsecheckout true
+          while [ $# -gt 0 ]; do
+            echo $1 >> .git/info/sparse-checkout
+            shift
+          done
+          git pull --depth=1 origin $repo_branch
+          find ~/$local_save_dir -name ".git" | xargs rm -rf {}
+          cd ..
+          mv -f ~/$local_save_dir /$GITHUB_WORKSPACE/$local_save_dir
+        }
+
         function mvdir() {
           mv -n `find $1/* -maxdepth 0 -type d` ./
           rm -rf $1
@@ -112,66 +142,69 @@ jobs:
           mv -f `find $1/* -maxdepth 0 -type d` ./
           rm -rf $1
         }
+
+        function mvluci() {
+          mv -n `find $1/* -maxdepth 0 -type d -name "luci-app-*"` ./
+          rm -rf $1
+        }
         
         git_clone https://github.com/sirpdboy/luci-app-advanced
         git_clone https://github.com/honwen/luci-app-aliddns
         git_clone https://github.com/sbwml/luci-app-alist sbwmlalist
-        svn export https://github.com/messense/aliyundrive-webdav/trunk/openwrt && mvdir openwrt
         git_clone https://github.com/roacn/luci-app-autoupdate
         git_clone https://github.com/sirpdboy/luci-app-autotimeset
         git_clone https://github.com/NateLol/luci-app-beardropper
-        git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest.git cloudflarespeedtest
-        svn export https://github.com/immortalwrt-collections/openwrt-cdnspeedtest/trunk/cdnspeedtest
+        git_clone https://github.com/mingxiaoyu/luci-app-cloudflarespeedtest tmp && mvdir tmp/applications
+        git_clone https://github.com/immortalwrt-collections/openwrt-cdnspeedtest  && mvdir openwrt-cdnspeedtest
         git_clone https://github.com/sirpdboy/luci-app-eqosplus
         git_clone https://github.com/sbwml/luci-app-mosdns mos
         git_clone https://github.com/sirpdboy/luci-app-netdata
-        svn export https://github.com/sirpdboy/netspeedtest/trunk/luci-app-netspeedtest
-        svn export https://github.com/sirpdboy/netspeedtest/trunk/homebox
-        svn export https://github.com/coolsnowwolf/gargoyle/trunk/package/addon/lean/vsftpd-alt
+        git_clone https://github.com/sirpdboy/netspeedtest tmp && mvdir tmp
         git_clone https://github.com/rufengsuixing/luci-app-onliner
-        svn export https://github.com/vernesong/OpenClash/trunk/luci-app-openclash
+        git_clone https://github.com/vernesong/OpenClash tmp && mvluci tmp
         git_clone https://github.com/sirpdboy/luci-app-parentcontrol
+        git_clone https://github.com/sirpdboy/luci-app-partexp
         git_clone https://github.com/esirplayground/luci-app-poweroff
+        git_clone https://github.com/sirpdboy/luci-app-poweroffdevice
         git_clone https://github.com/zzsj0928/luci-app-pushbot
         git_clone https://github.com/sbwml/luci-app-qbittorrent sbwml_qbittorrent && mvdir sbwml_qbittorrent
         git_clone https://github.com/DevOpenWRT-Router/luci-app-rebootschedule
-        svn export https://github.com/doushang/luci-app-shortcutmenu/trunk/luci-app-shortcutmenu
+        git_clone https://github.com/doushang/luci-app-shortcutmenu tmp && mvluci tmp
         #git_clone https://github.com/pymumu/luci-app-smartdns
         #git_clone https://github.com/pymumu/openwrt-smartdns smartdns
-        svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns/trunk/tencentcloud_ddns luci-app-tencentddns
-        svn export https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos/trunk/tencentcloud_cos luci-app-tencentcloud-cos
+        git_clone https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-ddns tmp && mv -f tmp/tencentcloud_ddns ./tencentcloud_ddns && rm -rf tmp
+        git_clone https://github.com/Tencent-Cloud-Plugins/tencentcloud-openwrt-plugin-cos tmp && mv -f tmp/tencentcloud_cos ./tencentcloud_cos && rm -rf tmp
         git_branch_clone master https://github.com/tty228/luci-app-wechatpush
         git_clone https://github.com/walkingsky/luci-wifidog luci-app-wifidog
         #git_branch_clone master https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         git_branch_clone js https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic
         #git_clone https://github.com/maxlicheng/luci-app-unblockmusic.git
-        svn export https://github.com/brvphoenix/luci-app-wrtbwmon/trunk/luci-app-wrtbwmon
+        git_clone https://github.com/brvphoenix/luci-app-wrtbwmon tmp && mvdir tmp
+        git_clone https://github.com/brvphoenix/wrtbwmon tmp && mvdir tmp
         git_clone https://github.com/sbwml/luci-app-xunlei
-        svn export https://github.com/brvphoenix/wrtbwmon/trunk/wrtbwmon
         
         git_clone https://github.com/xiaorouji/openwrt-passwall-packages && mvdir_force openwrt-passwall-packages
-        svn export https://github.com/xiaorouji/openwrt-passwall/trunk/luci-app-passwall
-        svn export https://github.com/xiaorouji/openwrt-passwall2/trunk/luci-app-passwall2
+        git_clone https://github.com/xiaorouji/openwrt-passwall tmp && mvluci tmp
+        git_clone https://github.com/xiaorouji/openwrt-passwall2 tmp &&mvluci tmp
         git_branch_clone main https://github.com/fw876/helloworld && mvdir helloworld
-
-        svn export https://github.com/linkease/nas-packages-luci/trunk/luci ./linkease/nas/luci && mv -n ./linkease/nas/luci/* ./linkease && rm -rf ./linkease/nas
-        svn export https://github.com/linkease/nas-packages/trunk/network/services ./linkease/nas/network/services && mv -n ./linkease/nas/network/services/* ./linkease && rm -rf ./linkease/nas
-        svn export https://github.com/linkease/nas-packages/trunk/multimedia/ffmpeg-remux ./linkease/nas/multimedia/ffmpeg-remux && mv -n ./linkease/nas/multimedia/* ./linkease && rm -rf ./linkease/nas
-        svn export https://github.com/linkease/istore/trunk/luci ./linkease/iStore/luci && mv -n ./linkease/iStore/luci/* ./linkease && rm -rf ./linkease/iStore
-        svn export https://github.com/linkease/istore/trunk/translations ./linkease/translations
         
+        git_clone https://github.com/linkease/nas-packages-luci tmp && mvdir tmp/luci
+        git_clone https://github.com/linkease/nas-packages tmp && mvdir tmp/multimedia
+        git_clone https://github.com/linkease/nas-packages tmp && mvdir tmp/network/services
+        git_clone https://github.com/linkease/istore
+        
+        git_partial_clone main https://github.com/messense/aliyundrive-webdav luci-app-aliyundrive-webdav openwrt/luci-app-aliyundrive-webdav openwrt/aliyundrive-webdav
+        git_partial_clone v5 https://github.com/sbwml/luci-app-mosdns luci-app-mosdns luci-app-mosdns mosdns v2dat
         git_branch_clone master https://github.com/jerrykuku/luci-theme-argon
         git_branch_clone master https://github.com/jerrykuku/luci-app-argon-config
         git_clone https://github.com/derisamedia/luci-theme-alpha
-        svn export https://github.com/Aslin-Ameng/luci-theme-Light/trunk/luci-theme-Light
+        git_clone https://github.com/Aslin-Ameng/luci-theme-Light tmp && mvdir tmp
         
     - name: Delete duplicated packages
       continue-on-error: true
       run: |
         shopt -s extglob
-        mv -n cloudflarespeedtest/applications/luci-app-cloudflarespeedtest luci-app-cloudflarespeedtest ; rm -rf cloudflarespeedtest
         mv -f sbwmlalist/luci-app-alist luci-app-alist && mv -f sbwmlalist/alist alist ; rm -rf sbwmlalist
-        rm -rf mosdns && mv -f mos/luci-app-mosdns luci-app-mosdns && mv -f mos/mosdns mosdns && mv -f mos/v2dat v2dat ; rm -rf mos
         cp -rf .github/diy/packages/* ./ || true
         rm -rf */.git
         
