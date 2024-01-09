@@ -134,12 +134,22 @@ jobs:
         }
 
         function mvdir() {
-          mv -n `find $1/* -maxdepth 0 -type d` ./
+          if [ -z "$2" ]; then
+            mv -n `find $1/* -maxdepth 0 -type d` ./
+          else
+            [ -d "./$2" ] && mkdir -p ./$2
+            mv -n `find $1/* -maxdepth 0 -type d` ./$2
+          fi
           rm -rf $1
         }
         
         function mvdir_force() {
-          mv -f `find $1/* -maxdepth 0 -type d` ./
+          if [ -z "$2" ]; then
+            mv -f `find $1/* -maxdepth 0 -type d` ./
+          else
+            [ -d "./$2" ] && mkdir -p ./$2
+            mv -f `find $1/* -maxdepth 0 -type d` ./$2
+          fi
           rm -rf $1
         }
 

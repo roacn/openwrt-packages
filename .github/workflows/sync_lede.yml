@@ -136,6 +136,7 @@ jobs:
           if [ -z "$2" ]; then
             mv -n `find $1/* -maxdepth 0 -type d` ./
           else
+            [ -d "./$2" ] && mkdir -p ./$2
             mv -n `find $1/* -maxdepth 0 -type d` ./$2
           fi
           rm -rf $1
@@ -145,6 +146,7 @@ jobs:
           if [ -z "$2" ]; then
             mv -f `find $1/* -maxdepth 0 -type d` ./
           else
+            [ -d "./$2" ] && mkdir -p ./$2
             mv -f `find $1/* -maxdepth 0 -type d` ./$2
           fi
           rm -rf $1
