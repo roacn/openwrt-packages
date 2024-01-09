@@ -1,0 +1,78 @@
+<%#
+ Copyright 2008 Steven Barth <steven@midlink.org>
+ Copyright 2008-2012 Jo-Philipp Wich <jow@openwrt.org>
+ Licensed to the public under the Apache License 2.0.
+-%>
+
+    <%+header%>
+
+
+        <div class="login_panel">
+            <div class="login_panel_content">
+                <div class="left_content"><svg id="g_4" data-name="g4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 206 206">
+                    <path id="p_5" data-name="p5" d="M0,0H206V206H0Z" fill="none"/>
+                    <path id="p_6" data-name="p6" d="M75.382,105V79.25H92.549V105h42.917a8.583,8.583,0,0,1,8.583,8.583v51.5a8.583,8.583,0,0,1-8.583,8.583h-103a8.583,8.583,0,0,1-8.583-8.583v-51.5A8.583,8.583,0,0,1,32.466,105ZM2.51,60.684a85.874,85.874,0,0,1,162.912,0L149.13,66.109a68.692,68.692,0,0,0-130.329,0L2.519,60.684ZM35.092,71.542a51.526,51.526,0,0,1,97.747,0l-16.291,5.433a34.35,34.35,0,0,0-65.165,0L35.092,71.542Zm5.957,50.624V156.5h85.833V122.167Z" transform="translate(19.034 15.167)" fill="#f5f5f5"/>
+                  </svg>
+                    <span class="left_content_title">openWRT路由系统</span><span class="left_content_auth">需要授权</span>
+                </div>
+                <div class="right_content">
+                    <form method="post" action="<%=pcdata(luci.http.getenv(" REQUEST_URI "))%>">
+                        <div class="right_form">
+                            <input name="luci_username" value="<%=duser%>" type="hidden" />
+                            <input class="right_psd_input" type="password" name="luci_password" />
+                            <%- if fuser then %>
+                                <div class="login_errorbox">
+                                    <%:Invalid username and/or password! Please try again.%>
+                                </div>
+                                <% end -%>
+                                    <input type="submit" value="<%:Login%>" class="sysauth_btn login_btn" />
+                                    <input type="reset" value="<%:Reset%>" class="sysauth_btn reset_btn" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            //<![CDATA[
+            var input = document.getElementsByName('luci_password')[0];
+            if (input)
+                input.focus();
+
+
+            //]]>
+        </script>
+
+        <%
+            local uci  = require "luci.model.uci".cursor()
+            local fs  = require "nixio.fs"
+            local https_key = uci:get("uhttpd", "main", "key")
+            local https_port = uci:get("uhttpd", "main", "listen_https")
+            if type(https_port) == "table" then
+                https_port = https_port[1]
+            end
+
+            if https_port and fs.access(https_key) then
+                https_port = https_port:match("(%d+)$")
+        %>
+
+            <script type="text/javascript">
+                //<![CDATA[
+                if (document.location.protocol != 'https:') {
+                    var url = 'https://' + window.location.hostname + ':' + '<%=https_port%>' + window.location.pathname;
+                    var img = new Image;
+                    img.onload = function() {
+                        window.location = url
+                    };
+                    img.src = 'https://' + window.location.hostname + ':' + '<%=https_port%>' + '<%=resource%>/cbi/up.gif?' + Math.random();;
+                    setTimeout(function() {
+                        img.src = ''
+                    }, 5000);
+                }
+
+                //]]>
+            </script>
+
+            <% end %>
+
+                <%+footer%>
