@@ -57,55 +57,61 @@ jobs:
         rm -rf `find ./* -maxdepth 0 -type d ! -name ".github/diy"` >/dev/null 2>&1
         
         function git_clone() {
-          if [ -n "$2" ]; then
-            rm -rf $2 
+          local repo_url="$1"
+          local local_save_dir="$2"
+
+          if [ -n "$local_save_dir" ]; then
+            rm -rf $local_save_dir 
           fi
-          git clone --depth 1 $1 $2
+          git clone --depth 1 $repo_url $local_save_dir
           if [ "$?" != 0 ]; then
-            echo "error on $1"
+            echo "error on $repo_url"
             pid="$( ps -q $$ )"
             kill $pid
           fi
         }
         
         function git_branch_clone() {
-          if [ -n "$3" ]; then
-            rm -rf $3 
+          local branch="$1"
+          local repo_url="$2"
+          local local_save_dir="$3"
+          if [ -n "$local_save_dir" ]; then
+            rm -rf $local_save_dir 
           fi
-          git clone --depth 1 -b $1 $2 $3
+          git clone --depth 1 -b $branch $repo_url $local_save_dir
           if [ "$?" != 0 ]; then
-            echo "error on $2"
+            echo "error on $repo_url"
             pid="$( ps -q $$ )"
             kill $pid
           fi
         }
         
         function git_sparse_clone() {
-          branch="$1" rurl="$2" localdir="$3" && shift 3
-          git clone -b $branch --depth 1 --filter=blob:none --sparse $rurl $localdir
+          branch="$1" repo_url="$2" local_save_dir="$3" && shift 3
+          git clone -b $branch --depth 1 --filter=blob:none --sparse $repo_url $local_save_dir
           if [ "$?" != 0 ]; then
-            echo "error on $rurl"
+            echo "error on $repo_url"
             pid="$( ps -q $$ )"
             kill $pid
           fi
-          cd $localdir
+          cd $local_save_dir
           git sparse-checkout init --cone
           git sparse-checkout set $@
           mv -n $@ ../ || true
           cd ..
-          rm -rf $localdir
+          rm -rf $local_save_dir
         }
         
-        function git_sparse_clone2() {
-          commitid="$1" rurl="$2" localdir="$3" && shift 3
-          git clone --filter=blob:none --sparse $rurl $localdir
-          cd $localdir
+        function git_sparse_clone_commit() {
+          commitid="$1" repo_url="$2" local_save_dir="$3" && shift 3
+          git clone --filter=blob:none --sparse $repo_url $local_save_dir
+          cd $local_save_dir
           git checkout $commitid
           git sparse-checkout init --cone
           git sparse-checkout set $@
           mv -n $@ ../ || true
           cd ..
-          rm -rf $localdir
+          rm -rf $local_save_dir
         }
         
         function git_partial_clone() {
@@ -133,28 +139,33 @@ jobs:
         }
 
         function mvdir() {
-          if [ -z "$2" ]; then
-            mv -n `find $1/* -maxdepth 0 -type d` ./
+          local source_dir=$1
+          local dest_dir=$2
+          if [ -z "$dest_dir" ]; then
+            mv -n `find $source_dir/* -maxdepth 0 -type d` ./
           else
-            [ ! -d "./$2" ] && mkdir -p ./$2
-            mv -n `find $1/* -maxdepth 0 -type d` ./$2
+            [ ! -d "./$dest_dir" ] && mkdir -p ./$dest_dir
+            mv -n `find $source_dir/* -maxdepth 0 -type d` ./$dest_dir
           fi
-          rm -rf $1
+          rm -rf $source_dir
         }
         
         function mvdir_force() {
-          if [ -z "$2" ]; then
-            mv -f `find $1/* -maxdepth 0 -type d` ./
+          local source_dir=$1
+          local dest_dir=$2
+          if [ -z "$dest_dir" ]; then
+            mv -f `find $source_dir/* -maxdepth 0 -type d` ./
           else
-            [ ! -d "./$2" ] && mkdir -p ./$2
-            mv -f `find $1/* -maxdepth 0 -type d` ./$2
+            [ ! -d "./$dest_dir" ] && mkdir -p ./$dest_dir
+            mv -f `find $source_dir/* -maxdepth 0 -type d` ./$dest_dir
           fi
-          rm -rf $1
+          rm -rf $source_dir
         }
 
         function mvluci() {
-          mv -n `find $1/* -maxdepth 0 -type d -name "luci-app-*"` ./
-          rm -rf $1
+          local source_dir=$1
+          mv -n `find $source_dir/* -maxdepth 0 -type d -name "luci-app-*"` ./
+          rm -rf $source_dir
         }
         
         git_clone https://github.com/sirpdboy/luci-app-advanced
