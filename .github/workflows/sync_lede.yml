@@ -139,8 +139,8 @@ jobs:
         }
 
         function mvdir() {
-          local source_dir=$1
-          local dest_dir=$2
+          local source_dir="$1"
+          local dest_dir="$2"
           if [ -z "$dest_dir" ]; then
             mv -n `find $source_dir/* -maxdepth 0 -type d` ./
           else
@@ -151,8 +151,8 @@ jobs:
         }
         
         function mvdir_force() {
-          local source_dir=$1
-          local dest_dir=$2
+          local source_dir="$1"
+          local dest_dir="$2"
           if [ -z "$dest_dir" ]; then
             mv -f `find $source_dir/* -maxdepth 0 -type d` ./
           else
@@ -163,7 +163,7 @@ jobs:
         }
 
         function mvluci() {
-          local source_dir=$1
+          local source_dir="$1"
           mv -n `find $source_dir/* -maxdepth 0 -type d -name "luci-app-*"` ./
           rm -rf $source_dir
         }
