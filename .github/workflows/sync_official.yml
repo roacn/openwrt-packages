@@ -163,7 +163,7 @@ jobs:
 
         function mvluci() {
           local source_dir="$1"
-          mv -n `find $source_dir/* -maxdepth 0 -type d -name "luci-app-*"` ./
+          mv -n `find $source_dir/* -maxdepth 0 -type d -name "luci-*"` ./
           rm -rf $source_dir
         }
         
@@ -215,7 +215,7 @@ jobs:
         git_branch_clone master https://github.com/jerrykuku/luci-theme-argon
         git_branch_clone master https://github.com/jerrykuku/luci-app-argon-config
         git_clone https://github.com/derisamedia/luci-theme-alpha
-        git_clone https://github.com/Aslin-Ameng/luci-theme-Light tmp && mvdir tmp
+        git_clone https://github.com/Aslin-Ameng/luci-theme-Light tmp && mvluci tmp
         
     - name: Delete duplicated packages
       continue-on-error: true
