@@ -6,11 +6,9 @@ name: Merge-Upstream-Official
 on:
   push:
     branches:
-      - Official
+      - Lede
     paths:
       - '.github/workflows/sync_official.yml'
-      - '.gitignore'
-      - '.github/diy/**'
   schedule:
     - cron: 25 */8 * * *
   workflow_dispatch:
