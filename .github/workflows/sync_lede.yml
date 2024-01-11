@@ -133,7 +133,7 @@ jobs:
             shift
           done
           git pull --depth=1 origin $repo_branch
-          find ~/$local_save_dir -name ".git" | xargs rm -rf {}
+          find ~/$local_save_dir -name ".git*" | xargs rm -rf {}
           cd $GITHUB_WORKSPACE
           mv -f ~/$local_save_dir $GITHUB_WORKSPACE/$local_save_dir
         }
