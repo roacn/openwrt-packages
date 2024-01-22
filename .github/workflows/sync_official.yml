@@ -115,7 +115,7 @@ jobs:
         
         function git_partial_clone() {
           if [ "$#" -lt 4 ]; then
-            echo "Usage: git_partial_clone <repo_branch> <repo_url> <local_save_dir> <repo_folders_path>"
+            echo "Usage: git_partial_clone <repo_branch> <repo_url> <local_save_dir> <repo_folder_path1 repo_folder_path2 ...>"
             return 1
           fi
           local repo_branch="$1"
