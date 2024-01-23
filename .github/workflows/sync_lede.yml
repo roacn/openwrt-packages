@@ -122,6 +122,8 @@ jobs:
           local repo_branch="$1"
           local repo_url="$2"
           local local_save_dir="$3"
+
+          shift 3
         
           mkdir ~/$local_save_dir
           cd ~/$local_save_dir
