@@ -230,6 +230,7 @@ jobs:
         cp -rf .github/diy/packages/* ./ || true
         rm -rf */.git*
         rm -rf tmp
+        rm -rf mosdns
         
     - name: Apply patches
       continue-on-error: true
