@@ -205,7 +205,7 @@ jobs:
         
         git_clone https://github.com/xiaorouji/openwrt-passwall-packages && mvdir_force openwrt-passwall-packages
         git_clone https://github.com/xiaorouji/openwrt-passwall tmp && mvluci tmp
-        git_clone https://github.com/xiaorouji/openwrt-passwall2 tmp &&mvluci tmp
+        git_clone https://github.com/xiaorouji/openwrt-passwall2 tmp && mvluci tmp
         git_branch_clone main https://github.com/fw876/helloworld && mvdir helloworld
         
         git_clone https://github.com/linkease/nas-packages-luci tmp && mvdir_force tmp/luci linkease/nas
