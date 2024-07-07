@@ -117,7 +117,7 @@ log_change() {
 # 初始化
 init() {
 	enable_detection
-	[ -f ${logfile} ] && local logrow=$(grep -c "" ${logfile}) || local logrow="0"
+	[ -f "$logfile" ] && local logrow=$(grep -c "" "$logfile") || local logrow="0"
 	[ "$logrow" -ne 0 ] && echo "---------------------------------------------------------------------------------------" >>${logfile}
 	log_change "【初始化】start running..."
 	if [ -f "/usr/share/wechatpush/errlog" ]; then
@@ -147,7 +147,6 @@ init() {
 		[ -n "$tmp_ip" ] && add_ip_white "$tmp_ip" "0"
 	done <<<"$tmp_ip_list"
 	set_ip_black
-	rm -f "${dir}/scan_info" >/dev/null 2>&1
 	return 0
 }
 
@@ -155,7 +154,7 @@ init() {
 deltemp() {
 	unset title content gateway_iplist
 	rm -f "${dir}/title" "${dir}/content" "${dir}/send_enable.lock" "${dir}/send.lock" "${tempjsonpath}" "${dir}/cookies.txt" >/dev/null 2>&1
-	LockFile unlock
+	silent_run LockFile unlock
 	[ -f "$logfile" ] && local logrow=$(grep -c "" "$logfile") || local logrow="0"
 	[ "$logrow" -gt 500 ] && sed -i '1,100d' "$logfile" && log_change "【清理】日志超出上限，删除前 100 条"
 	# 检查 JSON 文件格式是否有效
@@ -173,6 +172,7 @@ enable_detection() {
 		get_config enable
 		[ -z "$enable" ] || [ "$enable" -eq "0" ] && exit || sleep 1
 	done
+	unset i
 }
 
 # 获取 ip
@@ -389,10 +389,9 @@ check_http_access() {
 	return 1
 }
 
-# 获取文件最后修改时间和行数
+# 获取文件最后修改时间（距离现在过去了多少秒）
 file_date() {
 	local file_dir="$1"
-	local filerow=$(grep -c "" "${file_dir}" 2>/dev/null || echo "0")
 	local datetime=$(date -r "${file_dir}" +%s 2>/dev/null || echo "0")
 	expr $(date +%s) - ${datetime}
 }
@@ -424,23 +423,34 @@ getgateway() {
 # 扫描范围内 IP
 scanlocalip() {
 	[ -z "$scan_ip_range" ] && return
-	last_scan_ip_time=$(file_date "${dir}/scan_info")
+	[ -z "$last_scan_ip_time" ] && last_scan_ip_time=0
 
-	if [ ! -f "${dir}/scan_info" ]; then
-		start_ip=$(echo "$scan_ip_range" | cut -d "-" -f 1)
-		end_ip=$(echo "$scan_ip_range" | cut -d "-" -f 2)
+	local current_time=$(date +%s)
+	local elapsed_time=$((current_time - last_scan_ip_time))
 
-		i=$(echo "$start_ip" | awk -F '.' '{print $NF}')
-		end_i=$(echo "$end_ip" | awk -F '.' '{print $NF}')
-		while [ "$i" -le "$end_i" ]; do
-			if ping -c 1 "${start_ip%.*}.$i" >/dev/null 2>&1 & then
-				echo "${start_ip%.*}.$i" >>"${dir}/scan_info"
-			fi
-			i=$((i + 1))
+	# 判断是否需要重新扫描
+	if [ "$elapsed_time" -ge "$device_info_helper_sleeptime" ]; then
+		local start_ip=$(echo "$scan_ip_range" | cut -d "-" -f 1)
+		local end_ip=$(echo "$scan_ip_range" | cut -d "-" -f 2)
+
+		local start_num=$(echo "$start_ip" | awk -F '.' '{print $NF}')
+		local end_num=$(echo "$end_ip" | awk -F '.' '{print $NF}')
+		local base_ip=$(echo "$start_ip" | awk -F '.' '{print $1"."$2"."$3}')
+
+		for i in $(seq "$start_num" "$end_num"); do
+			# 获取一个令牌
+			read -u 5
+			{
+				ping -c 1 "${base_ip}.${i}" >/dev/null 2>&1
+				# 释放令牌
+				echo >&5
+			} &
 		done
-	fi
+		wait
 
-	[ "$last_scan_ip_time" -ge "$device_info_helper_sleeptime" ] && cat "${dir}/scan_info"
+		last_scan_ip_time="$current_time"
+	fi
+	unset i
 }
 
 # 查询设备接口
@@ -481,12 +491,13 @@ getping() {
 
 	interface=$(cat /proc/net/arp | grep -w "$ip" | awk '{print $6}' | grep -v "^$" | sort -u | head -n1)
 	for i in $(seq 1 "$retry_count"); do
-		# arping 应使用 br-lan，有 WiFi 的设备接口为 wlan*，重新获取
+		# arping 应使用 br-lan 等接口，有 WiFi 的设备接口为 wlan*，重新获取
 		[ -n "$interface" ] && ip_ms=$(arping -I ${interface} -c 20 -f -w "$timeout" "$ip") 2>/dev/null
 		(! echo "$ip_ms" | grep -q "ms") && ip_ms=$(ping -c 5 -w "$timeout" "$ip" | grep -v '100% packet loss') 2>/dev/null
 		(! echo "$ip_ms" | grep -q "ms") && sleep 1
 	done
 	echo "$ip_ms" | grep -q "ms"
+	unset i
 }
 
 # CPU 占用率
@@ -675,6 +686,8 @@ cut_str() {
 				max_column=$i
 			fi
 		done
+		unset i
+
 		local text=$(echo -n "$1" | cut -d ' ' -f $max_column)
 		if [ $(length_str "$text") -le "$2" ]; then
 			echo "$text" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'
@@ -706,13 +719,15 @@ rand() {
 first() {
 	local IPLIST=$(jq -r '.devices[] | select(.status == "online") | .ip' "$devices_json" | sort -u)
 	getgateway
-	scan_iplist=$(scanlocalip)
+	silent_run scanlocalip
 	for ip in $IPLIST; do
 		[ -n "$passive_mode" ] && [ "$passive_mode" -eq "1" ] && break
+		# 获取一个令牌
 		read -u 5
 		{
 			down "$ip"
-			echo "" >&5
+			# 释放令牌
+			echo >&5
 		} &
 	done
 	wait
@@ -721,13 +736,15 @@ first() {
 	[ -n "$IP_INFO" ] && local SUBNET=$(echo $IP_INFO | cut -d'/' -f1 | cut -d'.' -f1-3)
 	[ -n "$SUBNET" ] && local IPLIST=$(cat /proc/net/arp | grep "0x2\|0x6" | awk '{print $1}' | grep -v "^169.254." | grep -v "^$" | sort -u | grep -oE "${SUBNET}\.[0-9]{1,3}") || local IPLIST=$(cat /proc/net/arp | grep "0x2\|0x6" | awk '{print $1}' | grep -v "^169.254." | grep -v "^$" | sort -u | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
 
-	local IPLIST=$(echo -e "${IPLIST}\n${gateway_iplist}\n${scan_iplist}\n${always_check_ip_list}" | grep -v "^$" | sort -u)
+	local IPLIST=$(echo -e "${IPLIST}\n${gateway_iplist}\n${always_check_ip_list}" | grep -v "^$" | sort -u)
 	for ip in $IPLIST; do
 		[ -n "$passive_mode" ] && [ "$passive_mode" -eq "1" ] && break
+		# 获取一个令牌
 		read -u 5
 		{
 			up "$ip"
-			echo "" >&5
+			# 释放令牌
+			echo >&5
 		} &
 	done
 	wait
@@ -917,12 +934,12 @@ check_connect() {
 	is_online() {
 		local urls=(http://connect.rom.miui.com/generate_204 http://wifi.vivo.com.cn/generate_204 http://connectivitycheck.platform.hicloud.com/generate_204 http://www.apple.com/library/test/success.html)
 		local shuffled_urls=($(for i in "${urls[@]}"; do echo "$i"; done | awk 'BEGIN {srand()} {print rand(), $0}' | sort -n | cut -d' ' -f2-))
-
 		for url in "${shuffled_urls[@]}"; do
 			local status_code
 			status_code=$(curl -o /dev/null -sI -w "%{http_code}" "$url")
 			[[ "$status_code" -eq 204 || "$status_code" -eq 200 ]] && return 0
 		done
+		unset i url
 		return 1
 	}
 
@@ -984,7 +1001,7 @@ ip_changes() {
 
 	local last_IPv4=$(jq -r '.address[] | select(.IPv4 != null) | .IPv4' "$devices_json")
 	local last_IPv6=$(jq -r '.address[] | select(.IPv6 != null) | .IPv6' "$devices_json")
-	LockFile lock
+	silent_run LockFile lock
 
 	if [ -z "$last_IPv4" ] && [ -z "$last_IPv6" ]; then
 		log_change "${disturb_text}路由器已经重启!"
@@ -1014,7 +1031,7 @@ ip_changes() {
 			/etc/init.d/zerotier restart >/dev/null 2>&1
 		fi
 	fi
-	LockFile unlock
+	silent_run LockFile unlock
 }
 
 # 检测设备上线
@@ -1029,7 +1046,7 @@ up() {
 
 	# 连通
 	if [ "$ping_online" -eq "0" ]; then
-		LockFile lock
+		silent_run LockFile lock
 		local time_up=$(date +%s)
 
 		# 如果 IP 不存在，或者 http_access 键值为空，检查 http_access 参数
@@ -1066,8 +1083,8 @@ up() {
 
 			blackwhitelist ${mac}
 			local ip_blackwhite=$?
-			[ -f "${dir}/send_enable.lock" ] || [ -z "$notification_online" ] || [ -z "$ip_blackwhite" ] && LockFile unlock && return
-			[ -z "$ip_blackwhite" ] || [ "$ip_blackwhite" -ne "0" ] && LockFile unlock && return
+			[ -f "${dir}/send_enable.lock" ] || [ -z "$notification_online" ] || [ -z "$ip_blackwhite" ] && silent_run LockFile unlock && return
+			[ -z "$ip_blackwhite" ] || [ "$ip_blackwhite" -ne "0" ] && silent_run LockFile unlock && return
 
 			[ -f "${dir}/title" ] && local title=$(cat "${dir}/title")
 			[ -f "${dir}/content" ] && local content=$(cat "${dir}/content")
@@ -1095,7 +1112,7 @@ up() {
 			[ -n "$content" ] && echo -n "$content" >>"${dir}/content"
 		fi
 	fi
-	LockFile unlock
+	silent_run LockFile unlock
 }
 
 # 检测设备离线
@@ -1109,7 +1126,7 @@ down() {
 	local ip_blackwhite=$? && [ "$ip_blackwhite" -ne "0" ] && tmp_timeout=10 && tmp_retry_count=2
 	getping "$ip" "$mac" "$tmp_timeout" "$tmp_retry_count"
 	local ping_online=$?
-	LockFile lock
+	silent_run LockFile lock
 	# 离线，置入待验证区
 	if [ "$ping_online" -eq "1" ]; then
 		# 修改为 unknown
@@ -1138,7 +1155,7 @@ down() {
 		fi
 
 	fi
-	LockFile unlock
+	silent_run LockFile unlock
 }
 
 # 设备离线通知
@@ -1148,9 +1165,9 @@ down_send() {
 
 	local IPLIST=$(jq -r '.devices[] | select(.status == "unknown") | .ip' "$devices_json" | sort -u)
 	for ip in $IPLIST; do
-		LockFile lock
+		silent_run LockFile lock
 		jq -c --arg ip "$ip" '.devices |= map(if .ip == $ip then .status = "offline" else . end)' "$devices_json" >"$tmp_devices_json" && mv "$tmp_devices_json" "$devices_json"
-		LockFile unlock
+		silent_run LockFile unlock
 
 		local mac=$(getmac "$ip")
 		blackwhitelist "$mac"
@@ -1438,6 +1455,7 @@ get_disk() {
 			[ -n "$disk_err" ] && echo -e -n "${str_linefeed}${str_tab}${str_title_start}硬盘存在错误，请及时备份数据！！！${str_title_end}" >>"$output_dir/get_disk"
 		fi
 	done
+	unset i
 }
 
 # 查询 IP 归属地
@@ -1965,7 +1983,6 @@ while [ "$enable" -eq "1" ]; do
 	usage update
 	disturb
 	disturb=$?
-	device_aliases=$(cat "$device_aliases_path" 2>/dev/null)
 
 	# 网络状态与 IP 变动
 	if [ "$get_ipv4_mode" -ne "0" ] || [ "$get_ipv6_mode" -ne "0" ]; then
