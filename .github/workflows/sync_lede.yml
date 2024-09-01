@@ -211,7 +211,7 @@ jobs:
         git_clone https://github.com/linkease/istore tmp && mvdir_force tmp linkease/istore
         
         git_partial_clone main https://github.com/messense/aliyundrive-webdav tmp openwrt && mvdir tmp/openwrt
-        git_partial_clone v5 https://github.com/sbwml/luci-app-mosdns luci-app-mosdns luci-app-mosdns mosdns v2dat
+        git_partial_clone v5-lua https://github.com/sbwml/luci-app-mosdns luci-app-mosdns luci-app-mosdns mosdns v2dat
 
         git_clone https://github.com/openwrt-develop/luci-theme-atmaterial
         git_clone https://github.com/sirpdboy/luci-theme-btmod
